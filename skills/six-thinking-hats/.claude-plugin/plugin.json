@@ -1,0 +1,10 @@
+{
+  "name": "six-thinking-hats",
+  "description": "Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats).",
+  "version": "0.1.0",
+  "author": {
+    "name": "James Maggs"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jamesmaggs/software-factory"
+}
