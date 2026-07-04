@@ -25,6 +25,17 @@ skills/<skill>/
   skill's `.claude-plugin/plugin.json` and upserts its entry in
   [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json). Don't
   hand-edit either file — re-run the script to change a description.
+- When you change a skill, bump its version with
+  `bash scripts/bump_version.sh <skill> <major|minor|patch>` — `patch` for fixes
+  and wording, `minor` for a new backward-compatible capability, `major` for a
+  breaking change to its behaviour or output contract. Don't hand-edit the
+  `version` field.
+- These scripts may also be run by hand, so check before running them.
+  `register_plugin.sh` is idempotent — re-running is always safe. But
+  `bump_version.sh` is not: it bumps every time. Before bumping, confirm the
+  version hasn't already been bumped for this change (e.g. `git diff HEAD --
+  skills/<skill>/.claude-plugin/plugin.json` shows the `version` line already
+  changed); if it has, don't bump again.
 - A `SKILL.md` is runtime instruction, not a changelog. Keep it imperative —
   no rationale, justification, or "why we did it" commentary. Be ruthless.
   Would removing content change what the executing agent does? If no, it's
