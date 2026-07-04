@@ -1,6 +1,6 @@
 ---
 name: brand-voice
-description: Runs a structured interview to establish a brand's voice and tone, producing a markdown brand voice guide. Use this skill whenever the user wants to define, establish, derive, or document a "brand voice", "tone of voice", "voice and tone guidelines", or asks for a UX-style voice interview, even if they don't use the exact words "brand voice" — e.g. "help me figure out how the site should sound", "what tone should our copy use", "interview me about our brand personality".
+description: Establishes a brand's voice and tone through a structured interview, producing a fixed-schema markdown voice guide. Use when the user wants to define or document a brand voice, tone of voice, or voice-and-tone guidelines — including indirect asks like "how should the site sound?" or "what tone should our copy use?"
 ---
 
 # Brand Voice
@@ -31,11 +31,8 @@ Show all candidates and ask which is closest. Let the user pick, blend, or rewor
 
 ## Step 4: Write the guide
 
-Fill `assets/voice_doc_template.md`, keeping the headings, tables, and scale exactly as written.
+Fill `assets/voice_doc_template.md`, following its inline rules for each section and keeping the headings, tables, and scale exactly as written. Fold hard never-say items into the voice chart's don'ts.
 
-- **Dimensions**: score each row against its own poles (1 = left label, 5 = right). The **Position** column names the pole in words and is the source of truth; make the number agree. A near-pole score is fine — don't drift toward the middle to look balanced.
-- **Voice chart**: 3-5 traits, each with concrete copy-level do's and don'ts; fold hard never-say items into the don'ts.
-- **Tone shifts**: express each as a delta against the default, in the form `Dimension: default → shifted`.
-- Ground every score and do/don't in what the user actually said, not invention. The guide states the voice — never the case for choosing it. No "why this voice", no derivation note, no commentary.
+Ground every score and do/don't in what the user actually said, not invention. The guide states the voice, never the case for choosing it — no "why this voice", no derivation note, no commentary.
 
 Save the guide to `docs/design/brand-voice-guide.md` under the project root, creating the directory if it doesn't exist. Then run `bash scripts/lint_voice_guide.sh <path>` and fix every error before telling the user it's ready.
