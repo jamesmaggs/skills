@@ -1,17 +1,12 @@
 ---
 name: six-thinking-hats
 description: >-
-  Review, pressure-test, or evaluate an idea, plan, proposal, or decision by
-  running a panel of six parallel sub-agents, each wearing one of Edward de
-  Bono's Six Thinking Hats (white/facts, red/feelings, black/caution,
-  yellow/benefits, green/creativity, blue/synthesis). Use this whenever the user
-  wants a thorough, balanced, multi-perspective critique of an idea — e.g. "run
-  this past the six thinking hats", "give me a 360 review of this proposal",
-  "what are the angles I'm missing here", "stress-test this plan", "should we do
-  X?", or any time someone is weighing a decision and would benefit from
-  separating facts, feelings, risks, benefits, and creative alternatives instead
-  of arguing them all at once. Especially valuable for go/no-go calls, strategy
-  choices, and ideas that feel either too exciting or too scary to judge cleanly.
+  Reviews or pressure-tests an idea, plan, or decision by running a panel of six
+  parallel sub-agents, each wearing one of Edward de Bono's Six Thinking Hats
+  (facts, feelings, caution, benefits, creativity, synthesis). Use when the user
+  wants thorough, multi-perspective coverage of a decision rather than a hot take
+  — e.g. "run this past the six thinking hats", "give me a 360 review", "what
+  angles am I missing", "stress-test this plan", or a go/no-go call.
 ---
 
 # Six Thinking Hats
@@ -40,17 +35,6 @@ Two rules matter above all:
 2. **It's parallel thinking, not argument.** When two hats produce contradictory
    points, you do **not** stage a debate. Both points are laid down side by side.
    The blue-hat synthesis decides between them only if a decision is forced.
-
-## When to use this
-
-Use it when someone is evaluating a concrete idea, plan, proposal, or decision
-and wants real coverage rather than a hot take. It shines on go/no-go decisions,
-strategy choices, and ideas that are either so exciting or so alarming that a
-plain discussion would be lopsided.
-
-Skip it for tasks that aren't an idea to be judged (writing code, looking up a
-fact, executing a defined plan). If the "idea" is vague, do a little blue-hat
-framing first (below) to sharpen it before spawning the panel.
 
 ## Workflow
 
