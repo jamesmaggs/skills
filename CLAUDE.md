@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repository.
-
 ## What this repo is
 
 A personal collection of skills for [Claude Code](https://claude.com/claude-code).
@@ -23,19 +21,17 @@ skills/<skill>/
 - When adding a skill, wire it into the plugin marketplace by running
   `bash scripts/register_plugin.sh <skill> "<one-line summary>"`. It writes the
   skill's `.claude-plugin/plugin.json` and upserts its entry in
-  [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json). Don't
-  hand-edit either file — re-run the script to change a description.
+  [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json).
 - When you change a skill, bump its version with
   `bash scripts/bump_version.sh <skill> <major|minor|patch>` — `patch` for fixes
   and wording, `minor` for a new backward-compatible capability, `major` for a
-  breaking change to its behaviour or output contract. Don't hand-edit the
-  `version` field.
-- These scripts may also be run by hand, so check before running them.
-  `register_plugin.sh` is idempotent — re-running is always safe. But
-  `bump_version.sh` is not: it bumps every time. Before bumping, confirm the
-  version hasn't already been bumped for this change (e.g. `git diff HEAD --
-  skills/<skill>/.claude-plugin/plugin.json` shows the `version` line already
-  changed); if it has, don't bump again.
+  breaking change to its behaviour or output contract.
+- Never hand-edit the generated `plugin.json` or `marketplace.json` — go through
+  the scripts, which may also be run by hand. `register_plugin.sh` is idempotent,
+  so re-running is always safe; `bump_version.sh` is not — it bumps every time, so
+  before bumping confirm the version wasn't already bumped for this change (e.g.
+  `git diff HEAD -- skills/<skill>/.claude-plugin/plugin.json` shows the `version`
+  line already changed).
 - A `SKILL.md` is runtime instruction, not a changelog. Keep it imperative —
   no rationale, justification, or "why we did it" commentary. Be ruthless.
   Would removing content change what the executing agent does? If no, it's
@@ -46,10 +42,9 @@ skills/<skill>/
 ## Skill linting
 
 The `skill-linter` skill's `skills/skill-linter/scripts/lint_skill.sh` checks a
-`SKILL.md` against the Agent Skills spec (frontmatter delimiters, required
-`name`/`description`, the `name` charset and directory match, field length
-limits, body present, plus reference-nesting and best-practice heuristics). A
-pre-commit hook runs it on every top-level skill — enable it once per clone:
+`SKILL.md` against the Agent Skills spec (frontmatter, naming, length limits,
+references, and best-practice heuristics). A pre-commit hook runs it on every
+top-level skill — enable it once per clone:
 
 ```sh
 git config core.hooksPath .githooks
