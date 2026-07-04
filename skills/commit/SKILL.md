@@ -1,16 +1,12 @@
 ---
 name: commit
-description: Analyzes git diffs, stages changes, and generates descriptive commit messages following Conventional Commits format (feat, fix, chore, etc.), categorizing changes by type and scope. Splits unrelated changes into small atomic commits and groups semantically-coupled changes (e.g. code with its tests). Use this skill whenever the user says "commit", "make a commit", "commit my changes", "commit this", "stage and commit", or anything that indicates they want to record the current state of the working tree in git.
+description: Creates atomic git commits with Conventional Commits messages, splitting unrelated changes and grouping coupled ones like code with its tests. Use when the user wants to record working-tree changes in git — "commit", "commit my changes", "stage and commit".
 allowed-tools: Bash
 license: MIT
 compatibility: Requires git.
 ---
 
 # Commit
-
-## Instructions
-
-Follow these steps in order.
 
 ### Step 1: Understand the current state
 
