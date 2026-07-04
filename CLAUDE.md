@@ -20,6 +20,11 @@ skills/<skill>/
   portable, not Claude-specific.
 - When adding, renaming, or removing a skill, keep the [README](./README.md)
   Skills table in sync. Keep the skills in this table in alphabetical order.
+- When adding a skill, wire it into the plugin marketplace by running
+  `bash scripts/register_plugin.sh <skill> "<one-line summary>"`. It writes the
+  skill's `.claude-plugin/plugin.json` and upserts its entry in
+  [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json). Don't
+  hand-edit either file — re-run the script to change a description.
 - A `SKILL.md` is runtime instruction, not a changelog. Keep it imperative —
   no rationale, justification, or "why we did it" commentary. Be ruthless.
   Would removing content change what the executing agent does? If no, it's
