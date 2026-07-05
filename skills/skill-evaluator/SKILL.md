@@ -27,6 +27,17 @@ Two flows: **author** an eval spec for a skill that lacks one, then **run** it.
 - **Model policy:** default to **haiku** (cheapest, and where a skill adds the most
   value); **sonnet** is the ceiling; **opus is rejected**.
 
+## Trust boundary
+
+The sandbox is hardened — dropped capabilities, no privilege escalation, read-only root
+filesystem, and CPU/memory/pid limits — and the host side refuses path traversal in
+fixtures and check paths, caps file reads, and runs the grader with no tools, no MCP, and
+empty settings so untrusted output can't drive it. **But the container needs network to
+reach the API and the API key lives inside it**, so a hostile skill with network access
+could exfiltrate the key. As shipped, evaluate **skills you trust**; running genuinely
+untrusted skills safely would need an egress-restricting proxy that keeps the key out of
+the container.
+
 ## Author evals
 
 Produce `<skill>/evals/triggering.csv` and `<skill>/evals/outcome.json` per
