@@ -35,4 +35,4 @@ Fill `assets/voice_doc_template.md`, following its inline rules for each section
 
 Ground every score and do/don't in what the user actually said, not invention. The guide states the voice, never the case for choosing it — no "why this voice", no derivation note, no commentary.
 
-Save the guide to `docs/design/brand-voice-guide.md` under the project root, creating the directory if it doesn't exist. Then run `bash scripts/lint_voice_guide.sh <path>` and fix every error before telling the user it's ready.
+Save the guide to `docs/design/brand-voice-guide.md` under the project root, creating the directory if it doesn't exist. Then run `python3 scripts/lint_voice_guide.py <path>` and fix every error before telling the user it's ready.
