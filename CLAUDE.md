@@ -19,16 +19,16 @@ skills/<skill>/
 - When adding, renaming, or removing a skill, keep the [README](./README.md)
   Skills table in sync. Keep the skills in this table in alphabetical order.
 - When adding a skill, wire it into the plugin marketplace by running
-  `bash scripts/register_plugin.sh <skill> "<one-line summary>"`. It writes the
+  `python3 scripts/register_plugin.py <skill> "<one-line summary>"`. It writes the
   skill's `.claude-plugin/plugin.json` and upserts its entry in
   [`.claude-plugin/marketplace.json`](./.claude-plugin/marketplace.json).
 - When you change a skill, bump its version with
-  `bash scripts/bump_version.sh <skill> <major|minor|patch>` — `patch` for fixes
+  `python3 scripts/bump_version.py <skill> <major|minor|patch>` — `patch` for fixes
   and wording, `minor` for a new backward-compatible capability, `major` for a
   breaking change to its behaviour or output contract.
 - Never hand-edit the generated `plugin.json` or `marketplace.json` — go through
-  the scripts, which may also be run by hand. `register_plugin.sh` is idempotent,
-  so re-running is always safe; `bump_version.sh` is not — it bumps every time, so
+  the scripts, which may also be run by hand. `register_plugin.py` is idempotent,
+  so re-running is always safe; `bump_version.py` is not — it bumps every time, so
   before bumping confirm the version wasn't already bumped for this change (e.g.
   `git diff HEAD -- skills/<skill>/.claude-plugin/plugin.json` shows the `version`
   line already changed).
