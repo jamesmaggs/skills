@@ -121,42 +121,66 @@ def _result(check, passed, evidence):
             "pass": bool(passed), "evidence": evidence}
 
 
+# Bound bytes read and regex-scanned per check: the file may be attacker-written
+# (agent output), so cap it to guard the host against OOM and pathological regex.
+MAX_SCAN = 2_000_000
+
+
+def _safe_path(workdir, rel):
+    """Resolve `rel` under `workdir`, or None if it escapes (traversal/symlink)."""
+    base = Path(workdir).resolve()
+    try:
+        p = (base / rel).resolve()
+        p.relative_to(base)
+        return p
+    except (ValueError, OSError):
+        return None
+
+
+def _read_capped(path):
+    with path.open("r", errors="replace") as f:
+        return f.read(MAX_SCAN)
+
+
+def _search(pattern, text):
+    return re.search(pattern, (text or "")[:MAX_SCAN])
+
+
 def run_check(check, workdir, parsed, rubric_fn=None):
     ct = check.get("type")
     workdir = Path(workdir)
 
-    if ct == "file_exists":
-        path = workdir / check["path"]
-        return _result(check, path.exists(), "found" if path.exists() else "missing")
+    if ct in ("file_exists", "file_absent", "file_contains", "file_lacks"):
+        # Containment guard: the path comes from the (untrusted) skill's spec, so
+        # refuse anything that resolves outside the workdir (traversal/symlink).
+        path = _safe_path(workdir, check["path"])
+        if path is None:
+            return _result(check, False, f"refused: path '{check['path']}' escapes the workdir")
 
-    if ct == "file_absent":
-        path = workdir / check["path"]
-        return _result(check, not path.exists(), "absent" if not path.exists() else "present")
-
-    if ct == "file_contains":
-        path = workdir / check["path"]
-        if not path.exists():
-            return _result(check, False, f"file missing: {check['path']}")
-        text = path.read_text(errors="replace")
-        m = re.search(check["pattern"], text)
-        return _result(check, bool(m), f"matched {m.group(0)!r}" if m else "pattern not found")
-
-    if ct == "file_lacks":
-        path = workdir / check["path"]
-        if not path.exists():
-            return _result(check, True, f"file absent, so pattern not present: {check['path']}")
-        m = re.search(check["pattern"], path.read_text(errors="replace"))
-        return _result(check, not m, f"unexpectedly matched {m.group(0)!r}" if m else "pattern absent (good)")
+        if ct == "file_exists":
+            return _result(check, path.exists(), "found" if path.exists() else "missing")
+        if ct == "file_absent":
+            return _result(check, not path.exists(), "absent" if not path.exists() else "present")
+        if ct == "file_contains":
+            if not path.exists():
+                return _result(check, False, f"file missing: {check['path']}")
+            m = _search(check["pattern"], _read_capped(path))
+            return _result(check, bool(m), f"matched {m.group(0)!r}" if m else "pattern not found")
+        if ct == "file_lacks":
+            if not path.exists():
+                return _result(check, True, f"file absent, so pattern not present: {check['path']}")
+            m = _search(check["pattern"], _read_capped(path))
+            return _result(check, not m, f"unexpectedly matched {m.group(0)!r}" if m else "pattern absent (good)")
 
     if ct == "command_ran":
         pat = check["pattern"]
         for cmd in parsed["commands"]:
-            if re.search(pat, cmd):
+            if _search(pat, cmd):
                 return _result(check, True, f"ran: {cmd[:120]}")
         return _result(check, False, f"no command matched /{pat}/")
 
     if ct == "output_matches":
-        m = re.search(check["pattern"], parsed["final_text"])
+        m = _search(check["pattern"], parsed["final_text"])
         return _result(check, bool(m), f"matched {m.group(0)!r}" if m else "pattern not found in output")
 
     if ct == "rubric":

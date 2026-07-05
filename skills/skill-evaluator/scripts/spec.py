@@ -34,6 +34,31 @@ def evals_dir(skill_dir):
     return Path(skill_dir) / "evals"
 
 
+def is_safe_relpath(rel):
+    """True if `rel` is a relative path with no leading slash and no '..' escape.
+
+    Fixture and check paths come from the (untrusted) evaluated skill's spec, so
+    they must not point outside their sandbox via traversal or absolute paths.
+    """
+    if not isinstance(rel, str) or not rel:
+        return False
+    p = Path(rel)
+    return not p.is_absolute() and ".." not in p.parts
+
+
+def is_contained(base, rel):
+    """True if `rel` is a safe relative path that resolves inside `base`
+    (also catches a symlinked entry pointing outside)."""
+    if not is_safe_relpath(rel):
+        return False
+    base_r = Path(base).resolve()
+    try:
+        (base_r / rel).resolve().relative_to(base_r)
+        return True
+    except (ValueError, OSError):
+        return False
+
+
 def parse_bool(s):
     return str(s).strip().lower() == "true"
 
@@ -137,8 +162,11 @@ def validate(skill_dir):
                     if not (isinstance(case.get("prompt"), str) and case["prompt"].strip()):
                         errors.append(f"{label}: missing/empty prompt")
                     fx = case.get("fixture")
-                    if fx is not None and not (isinstance(fx, str) and (ed / fx).is_dir()):
-                        errors.append(f"{label}: fixture '{fx}' is not a directory under evals/")
+                    if fx is not None:
+                        if not is_contained(ed, fx):
+                            errors.append(f"{label}: fixture '{fx}' must be a relative path inside evals/ (no '..', no absolute, no symlink escape)")
+                        elif not (ed / fx).is_dir():
+                            errors.append(f"{label}: fixture '{fx}' is not a directory")
                     checks = case.get("checks")
                     if not isinstance(checks, list) or not checks:
                         errors.append(f"{label}: checks must be a non-empty array")
@@ -155,6 +183,9 @@ def validate(skill_dir):
                         for field in CHECK_TYPES[ct]:
                             if not (isinstance(chk.get(field), str) and chk[field].strip()):
                                 errors.append(f"{clabel}: type '{ct}' requires non-empty '{field}'")
+                        if "path" in CHECK_TYPES[ct] and isinstance(chk.get("path"), str) \
+                                and not is_safe_relpath(chk["path"]):
+                            errors.append(f"{clabel}: path '{chk['path']}' must be relative with no '..' or leading slash")
                         if "pattern" in CHECK_TYPES[ct] and isinstance(chk.get("pattern"), str):
                             try:
                                 re.compile(chk["pattern"])
