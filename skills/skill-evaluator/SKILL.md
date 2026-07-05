@@ -1,100 +1,71 @@
 ---
 name: skill-evaluator
-description: Judges whether a skill is actually good, in two parts: a qualitative review of its calibration and description/triggering quality, plus a behavioural evaluation that runs the skill's tasks with and without the skill loaded and scores the pass-rate delta against baseline. Use when the user wants to evaluate, judge, grade, score, or assess a skill, decide whether a skill is effective or worth shipping, or prove a skill beats baseline. For purely mechanical spec compliance (frontmatter limits, paths, reference nesting), use skill-linter; this skill judges substance and measures value, not syntax.
+description: Measures a skill's real value programmatically — runs it in a Docker sandbox with the skill loaded vs a no-skill baseline, grades the traces with deterministic checks, and records a score that trends over time. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, benchmark, or measure a skill, prove it beats baseline, create or write evals for a skill, or track a skill's quality over time. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
+allowed-tools: Bash, Read, Write, Edit
+license: MIT
+compatibility: Requires Docker, python3, and the claude CLI.
 ---
 
-# Skill Evaluator
+# Skill Evaluator Two
 
-Answer two questions about a skill: **is it well-made?** (judgement about its text)
-and **does it work?** (measured against a baseline). The second question is the one
-that matters most, and the one nobody can answer by reading alone.
+Judge a skill by what it **adds**, not how it reads. Every metric comes from running the
+skill headlessly and grading the trace — a skill can read beautifully and still change
+nothing. The eval spec format, check types, and scoring live in
+[`references/eval-spec.md`](references/eval-spec.md); read it before authoring or judging.
 
-Judge against the rubric in [references/evaluation-criteria.md](references/evaluation-criteria.md).
-Read it before evaluating; it defines the three dimensions used below.
+Two flows: **author** an eval spec for a skill that lacks one, then **run** it.
 
-## Step 0 — Form first (optional but recommended)
+## Prerequisites (for running; authoring needs none)
 
-If `skill-linter` is available, run it first to clear mechanical issues
-(frontmatter limits, path style, reference nesting). There is no point judging the
-substance of a skill whose frontmatter is invalid. Note its verdict and move on;
-this skill does not repeat those deterministic checks.
+- Docker daemon running, and the sandbox image built once: `bash scripts/build_image.sh`.
+- `ANTHROPIC_API_KEY` available for the **sandboxed** runs — export it or put
+  `ANTHROPIC_API_KEY=sk-...` in a gitignored `.env` at the repo root (loaded
+  automatically; override with `--env-file`). These runs bill against **API credits**,
+  which a Claude subscription does not include.
+- The **rubric grader** runs on the host and uses your **subscription** by default (off
+  the API bill); pass `--grader-auth apikey` in CI where no subscription exists.
+- **Model policy:** default to **haiku** (cheapest, and where a skill adds the most
+  value); **sonnet** is the ceiling; **opus is rejected**.
 
-## Step 1 — Judge the contents
+## Author evals
 
-Read the target SKILL.md and its bundled files, then assess two dimensions from the
-rubric:
+Produce `<skill>/evals/triggering.csv` and `<skill>/evals/outcome.json` per
+`references/eval-spec.md`. Read the target `SKILL.md` first, then:
 
-- **Calibration (Dimension A):** walk the body and classify content as keep / cut /
-  push. Flag anything the model already knows, padding, repetition, and any
-  mismatch between specificity and the fragility of the task. Label each finding
-  explicitly as keep, cut, or push in your written output — the labels are the
-  deliverable, not just your private reasoning; they are what makes the review
-  actionable. Name all three categories even when one is empty (e.g. "Push:
-  nothing here"), so it is clear the full keep/cut/push framework was applied
-  rather than only keep and cut.
-- **Triggering (Dimension B):** assess the description for what + when, third
-  person, key terms, coverage against under-triggering, and whether it would
-  misfire on near-misses or lose to a competing skill.
+1. **triggering.csv** — positive prompts (explicit, implicit, contextual) the skill
+   should fire on, plus **negative controls** (`should_trigger=false`) it must stay quiet
+   on. Without negatives you can't catch over-triggering.
+2. **outcome.json** — 2–4 **discriminating** tasks: ones a no-skill baseline would fail
+   (if baseline already passes, the skill adds nothing measurable). Prefer deterministic
+   checks (`file_exists`, `command_ran`, `file_contains`, `output_matches`); reach for a
+   `rubric` check only when correctness genuinely needs judgement. Assert the *right
+   outcome*, never mere presence of a word. Add a `fixture` dir (seed files and/or a
+   `setup.sh` the prompt runs) when the task needs a starting state.
+3. Validate: `python3 scripts/validate_spec.py --skill <skill-dir>`. Fix every error.
 
-Produce concrete strengths and weaknesses with line-level examples, not a bare
-score. **This step measures form, not effectiveness — a skill can read beautifully,
-pass every mechanical check, and still do nothing.** Say so plainly when form is
-clean but the content is thin or padded; naming that gap is one of the most useful
-things this review produces. This holds even when you could not run skill-linter —
-note whether the skill would *likely* pass mechanical checks, and that passing them
-is not the same as being good.
+**Done when** `validate_spec.py` reports 0 errors and every outcome case is one you
+believe baseline would fail.
 
-## Step 2 — Measure value against baseline
+## Run evals
 
-This is the decisive step (Dimension C). A skill's worth is the gap between the
-model's performance with it and without it.
+1. Ensure the image is built (see Prerequisites).
+2. `python3 scripts/run_evals.py --skill <skill-dir> [--model haiku|sonnet] [--json]`.
+   Each triggering row runs with the skill available (does it fire?); each outcome case
+   runs twice — once with the skill's guidance injected, once at baseline — to isolate
+   the guidance's value. Use `--dry-run` first to confirm the plan.
+3. Read the summary: `trigger_accuracy`, `outcome_pass_rate` (vs `baseline_pass_rate`),
+   `value_delta`, and the `composite`. The run appends one line to
+   `<skill>/evals/results/history.jsonl`.
 
-1. **Get evaluations.** Use the skill's `evals/evals.json` if present. If there are
-   none, create a small set of 3 realistic task prompts with verifiable,
-   *discriminating* expectations (ones a no-skill run would tend to fail). Note that
-   a dedicated evals-first workflow produces better sets than improvising here.
-2. **Run both configurations, in the same turn.** For each task, run it once **with
-   the skill loaded** and once at **baseline** (no skill for a new skill; the
-   previous version when improving an existing one). In Claude Code, spawn one
-   subagent per configuration so they run together; on platforms without subagents,
-   run them yourself one at a time with fresh context each.
-3. **Grade each run** against the expectations. Record each as `text` / `passed` /
-   `evidence`. Compute the pass rate per configuration.
-4. **Report the delta.** `value = with_skill_pass_rate − baseline_pass_rate`.
-   Always produce a measured delta, even when you had to reason through the two
-   configurations inline rather than run them — a verdict with no delta is the exact
-   failure mode this skill exists to prevent.
+## Report the verdict
 
-Watch for non-discriminating expectations (the baseline passes them too) and
-presence-not-correctness traps; both make the delta lie. Flag them rather than
-trusting the number.
+Lead with **`value_delta`** — it isolates what the skill adds; `trigger_accuracy` and
+`outcome_pass_rate` explain *why* it's high or low. Quote failing checks with their
+evidence. End with **ship / revise / rethink**:
 
-## Step 3 — Verdict
+- **ship** — clear positive `value_delta` and sound triggering.
+- **revise** — value is real but triggering misfires, or a few checks fail.
+- **rethink** — `value_delta` at or below zero: baseline already does the job, so the
+  skill earns its context cost only if it starts adding something.
 
-Combine the two halves, but let value dominate:
-
-- Lead with the **delta** and what it means. A near-zero delta means the skill is
-  dead weight however well it reads.
-- Then give the calibration and triggering assessment as the explanation for *why*
-  the skill performs as it does, and what to change.
-- End with a clear recommendation: ship, revise (with the specific changes), or
-  rethink.
-
-**Never declare a skill effective from reading alone.** If you could not run the
-baseline (no environment for it), say so plainly and present only the contents
-judgement, clearly labelled as form, not proof.
-
-## Before you finish — checklist
-
-Copy this and confirm each item. These are the behaviours that make the evaluation
-worth more than an unaided read, and the ones easiest to skip under time pressure:
-
-- [ ] Ran skill-linter, or noted it was unavailable
-- [ ] Labelled calibration findings as keep / cut / push, naming all three categories even if one is empty
-- [ ] Stated whether the skill would pass mechanical/lint checks and that passing them is not the same as being good (form ≠ value), even if the linter could not be run
-- [ ] Produced a measured with-vs-baseline delta, even if reasoned inline
-- [ ] Led the verdict with that delta, not with writing quality
-- [ ] Did not declare the skill effective from reading alone
-
-Grounded in Anthropic's Agent Skills best-practices and the skill-creator eval loop
-(`platform.claude.com/docs/en/agents-and-tools/agent-skills`).
+Never call a skill effective from reading alone — cite the measured delta.

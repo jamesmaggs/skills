@@ -6,3 +6,6 @@
 
 # Claude
 .claude/settings.local.json
+
+# Secrets
+.env

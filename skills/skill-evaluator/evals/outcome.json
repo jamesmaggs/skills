@@ -1,0 +1,13 @@
+[
+  {
+    "id": "author-spec",
+    "prompt": "Author an eval spec (triggering.csv and outcome.json) for the skill at ./target-skill, following the eval spec format. Write the files into ./target-skill/evals/.",
+    "fixture": "files/tiny-skill",
+    "checks": [
+      { "type": "file_exists",   "path": "target-skill/evals/triggering.csv" },
+      { "type": "file_exists",   "path": "target-skill/evals/outcome.json" },
+      { "type": "file_contains", "path": "target-skill/evals/triggering.csv", "pattern": "should_trigger" },
+      { "type": "rubric",        "criterion": "The outcome.json contains at least one discriminating case with objectively checkable checks that exercise the csv-column-stats skill's specific rules (empty-cell skipping or 2-decimal rounding)." }
+    ]
+  }
+]

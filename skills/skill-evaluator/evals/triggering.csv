@@ -1,0 +1,7 @@
+id,should_trigger,prompt
+eval-explicit,true,"Evaluate the commit skill and tell me whether it's worth shipping"
+eval-score,true,"Score my skill against a no-skill baseline"
+eval-author,true,"This skill has no evals — create some for it"
+eval-track,true,"How has this skill's quality changed over time?"
+neg-create,false,"Write a brand new skill that formats phone numbers"
+neg-lint,false,"Lint my SKILL.md for spec compliance"
