@@ -16,16 +16,11 @@ A personal collection of harness-engineering skills for [Claude Code](https://cl
 ## Install
 
 This repo is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces).
-Add it, then install the skills you want:
+Add it, then install any skill from the table above by name:
 
 ```sh
 /plugin marketplace add jamesmaggs/software-factory
-/plugin install adr@software-factory
-/plugin install brand-voice@software-factory
-/plugin install commit@software-factory
-/plugin install six-thinking-hats@software-factory
-/plugin install skill-evaluator@software-factory
-/plugin install skill-linter@software-factory
+/plugin install <skill>@software-factory   # e.g. commit@software-factory
 ```
 
 ## License
