@@ -1,0 +1,27 @@
+[
+  {
+    "id": "breaking-change",
+    "prompt": "Run ./setup.sh to create a git repo called sdk/, then work inside sdk/. It maintains a client SDK whose authenticate() function now requires a new, previously-absent region parameter, so old callers will break. The change and its updated tests are already in the working tree. Commit everything as a single well-described commit that clearly signals to consumers that this release is not backwards compatible. Then write commit_log.md in sdk/ recording the staging command(s) you ran and the complete commit message.",
+    "fixture": "files/breaking-change",
+    "checks": [
+      { "type": "command_ran",  "pattern": "git commit" },
+      { "type": "file_contains", "path": "sdk/.git/COMMIT_EDITMSG", "pattern": "^(feat|fix|perf|docs|refactor|test|build|ci|chore|revert)(\\([^)]+\\))?!: [a-z]" },
+      { "type": "file_contains", "path": "sdk/.git/COMMIT_EDITMSG", "pattern": "BREAKING CHANGE" },
+      { "type": "file_contains", "path": "sdk/.git/COMMIT_EDITMSG", "pattern": "Co-Authored-By:" },
+      { "type": "file_exists",   "path": "sdk/commit_log.md" },
+      { "type": "rubric",        "criterion": "A single commit was made that stages BOTH src/auth.py and tests/test_auth.py together and signals a breaking change per Conventional Commits." }
+    ]
+  },
+  {
+    "id": "staging-hygiene",
+    "prompt": "Run ./setup.sh to create a git repo called webapp/, then work inside webapp/. The working tree has the intended change (a farewell helper added to src/app.js) but also a local .env holding live secrets and a dist/ build artifact that must NOT be committed. There is no .gitignore. Commit ONLY the intended source change. Then write commit_log.md in webapp/ recording the exact staging command(s) you ran and the output of `git show --stat HEAD`.",
+    "fixture": "files/staging-hygiene",
+    "checks": [
+      { "type": "command_ran",  "pattern": "git commit" },
+      { "type": "file_contains", "path": "webapp/.git/COMMIT_EDITMSG", "pattern": "^(feat|fix|perf|docs|refactor|test|build|ci|chore|revert)(\\([^)]+\\))?: [a-z]" },
+      { "type": "file_contains", "path": "webapp/.git/COMMIT_EDITMSG", "pattern": "Co-Authored-By:" },
+      { "type": "file_exists",   "path": "webapp/commit_log.md" },
+      { "type": "rubric",        "criterion": "The commit includes src/app.js but does NOT include the .env secrets file or anything under dist/ (judge from the git show --stat output in commit_log.md)." }
+    ]
+  }
+]
