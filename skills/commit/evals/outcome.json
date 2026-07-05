@@ -23,5 +23,39 @@
       { "type": "file_exists",   "path": "webapp/commit_log.md" },
       { "type": "rubric",        "criterion": "The commit includes src/app.js but does NOT include the .env secrets file or anything under dist/ (judge from the git show --stat output in commit_log.md)." }
     ]
+  },
+  {
+    "id": "coupled-rename-and-typo",
+    "prompt": "Run ./setup.sh to create a TypeScript repo called fetchkit/, then work inside fetchkit/. The working tree has two uncommitted changes: (1) a rename of makeRequest to sendRequest across its definition in src/client.ts, the export in src/index.ts, and the call sites in src/middleware.ts, src/retry.ts and examples/basic.ts; and (2) an unrelated typo fix in a comment in src/utils.ts. Record these in git following the project's conventions. Then write commit-summary.md at the root of fetchkit/ documenting each commit: short hash, subject line, and the files included.",
+    "fixture": "files/coupled-rename-and-typo",
+    "checks": [
+      { "type": "command_ran",  "pattern": "git commit" },
+      { "type": "file_exists",   "path": "fetchkit/commit-summary.md" },
+      { "type": "file_contains", "path": "fetchkit/commit-summary.md", "pattern": "refactor" },
+      { "type": "rubric",        "criterion": "Two commits were made: the five renamed files (client.ts, index.ts, middleware.ts, retry.ts, examples/basic.ts) grouped in ONE refactor commit, and the src/utils.ts typo fix in a SEPARATE fix/docs commit." }
+    ]
+  },
+  {
+    "id": "match-repo-style",
+    "prompt": "Run ./setup.sh to create a git repo called apiclient/, then work inside apiclient/. The working tree has an uncommitted change to src/client.js that adds retry support. Commit it, following the project's existing conventions. This change corresponds to pull request #23.",
+    "fixture": "files/match-repo-style",
+    "checks": [
+      { "type": "command_ran",  "pattern": "git commit" },
+      { "type": "file_contains", "path": "apiclient/.git/COMMIT_EDITMSG", "pattern": "\\(#23\\)" },
+      { "type": "file_contains", "path": "apiclient/.git/COMMIT_EDITMSG", "pattern": "^(feat|fix|perf|docs|refactor|test|build|ci|chore|revert)(\\([^)]+\\))?: [a-z]" },
+      { "type": "rubric",        "criterion": "The commit subject ends with the pull-request reference (#23), matching the (#NN) house convention every prior commit in the git history uses." }
+    ]
+  },
+  {
+    "id": "precommit-hook-recovery",
+    "prompt": "Run ./setup.sh to create a git repo called linted-project/, then work inside linted-project/. It has a pre-commit hook that rejects any commit where staged Python files contain trailing whitespace. The working tree has correct code changes, but the files have trailing whitespace that will trip the hook. Get the changes committed successfully, handling the hook rejection correctly. Then write commit_log.md recording every git command you ran in order, what happened when the hook ran and how you resolved it, and the final commit message.",
+    "fixture": "files/precommit-hook-recovery",
+    "checks": [
+      { "type": "command_ran",  "pattern": "git commit" },
+      { "type": "file_exists",   "path": "linted-project/commit_log.md" },
+      { "type": "file_lacks",    "path": "linted-project/commit_log.md", "pattern": "--amend" },
+      { "type": "file_contains", "path": "linted-project/.git/COMMIT_EDITMSG", "pattern": "^(feat|fix|perf|docs|refactor|test|build|ci|chore|revert)(\\([^)]+\\))?: [a-z]" },
+      { "type": "rubric",        "criterion": "The pre-commit hook rejected the first attempt; the agent fixed the trailing whitespace, re-staged, and committed as a NEW commit (not via git commit --amend), per commit_log.md." }
+    ]
   }
 ]
