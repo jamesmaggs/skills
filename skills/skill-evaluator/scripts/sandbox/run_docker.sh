@@ -57,8 +57,22 @@ fi
 # think it is inside the outer Claude Code session.
 docker_args=(
   run --rm
+  # Hardening: no capabilities, no privilege escalation, read-only root fs with
+  # small tmpfs for the paths claude/git need, and resource caps against DoS
+  # (fork bomb, memory/CPU exhaustion). /work stays writable (bind mount).
+  --cap-drop ALL
+  --security-opt no-new-privileges
+  --read-only
+  --tmpfs /tmp:rw,nosuid,size=256m,mode=1777
+  --tmpfs /home/node:rw,nosuid,size=128m,mode=1777   # mode 1777 so non-root 'node' can write ~/.claude
+
+  --pids-limit 512
+  --memory 2g --memory-swap 2g
+  --cpus 2
+  --ulimit nofile=1024:1024
+  --ulimit nproc=512:512
   -v "$WORKDIR:/work" -w /work
-  -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
+  -e ANTHROPIC_API_KEY          # value from the environment, not argv (avoids ps exposure)
   -e "CLAUDECODE="
 )
 [ -n "$NAME" ] && docker_args+=(--name "$NAME")
