@@ -21,11 +21,12 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def die(msg, code):
+def die(msg, code) -> NoReturn:
     print(msg, file=sys.stderr)
     sys.exit(code)
 

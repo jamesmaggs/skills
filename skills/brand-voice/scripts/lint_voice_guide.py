@@ -172,7 +172,8 @@ def main():
                 rest = shift[colon + 1:]
                 ap = rest.index("->")
                 fromnum = int(rest[:ap].strip())
-                tonum = int(re.search(r"[0-9]+", rest[ap + 2:]).group())
+                tm = re.search(r"[0-9]+", rest[ap + 2:])
+                tonum = int(tm.group()) if tm else 0
                 if dim not in DIM_NAMES:
                     errors.append(f'Tone shift for "{ctx}" names unknown dimension "{dim}".')
                 elif dim in defaults and fromnum != defaults[dim]:
@@ -186,12 +187,12 @@ def main():
     present = [False] * 4
     satisfied = [False] * 4
     pending = -1
-    for l in sample_lines:
+    for ln in sample_lines:
         for k, label in enumerate(SAMPLE_LABELS):
-            if re.search(r"\*\*" + re.escape(label) + r":?\*\*", l):
+            if re.search(r"\*\*" + re.escape(label) + r":?\*\*", ln):
                 present[k] = True
                 pending = k
-        if re.match(r"^[ \t]*>", l) and pending >= 0:
+        if re.match(r"^[ \t]*>", ln) and pending >= 0:
             satisfied[pending] = True
     for k, label in enumerate(SAMPLE_LABELS):
         if not present[k]:

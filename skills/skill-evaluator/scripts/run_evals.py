@@ -25,6 +25,7 @@ import sys
 import tempfile
 import uuid
 from pathlib import Path
+from typing import NoReturn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import grade_trace  # noqa: E402
@@ -45,7 +46,7 @@ GRADER_DENY_TOOLS = ["Bash", "Edit", "Write", "NotebookEdit", "Read", "Grep",
                      "Glob", "WebFetch", "WebSearch", "Task"]
 
 
-def die(msg, code=1):
+def die(msg, code=1) -> NoReturn:
     print(f"error: {msg}", file=sys.stderr)
     sys.exit(code)
 

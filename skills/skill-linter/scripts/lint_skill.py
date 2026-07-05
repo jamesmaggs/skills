@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+from typing import NoReturn
 
 GENERIC_RE = re.compile(r"^(utils?|helpers?|tools?|doc[0-9]*|file[0-9]+|untitled|temp|misc)\.md$", re.I)
 
@@ -56,7 +57,7 @@ def main():
     def warn(cid, msg):
         checks.append((cid, "warning", False, msg))
 
-    def emit_and_exit():
+    def emit_and_exit() -> NoReturn:
         errors = sum(1 for _, s, p, _ in checks if not p and s == "error")
         warns = sum(1 for _, s, p, _ in checks if not p and s == "warning")
         passed = sum(1 for _, _, p, _ in checks if p)
@@ -143,13 +144,13 @@ def main():
     fm_lines = lines[1:fc]
     body_lines = lines[fc + 1:]
     # Mirror `$(awk 'NR>e')`: join with newlines, strip trailing newlines.
-    body = "".join(l + "\n" for l in body_lines).rstrip("\n")
+    body = "".join(ln + "\n" for ln in body_lines).rstrip("\n")
 
     # ---- name ----
     name = ""
-    for l in fm_lines:
-        if l.startswith("name:"):
-            name = re.sub(r"^name:[ \t]*", "", l)
+    for ln in fm_lines:
+        if ln.startswith("name:"):
+            name = re.sub(r"^name:[ \t]*", "", ln)
             break
     name = unquote(name.strip())
     if not name:
@@ -180,15 +181,15 @@ def main():
     # ---- description (with folded continuation lines) ----
     desc = ""
     ind = False
-    for l in fm_lines:
-        if not ind and l.startswith("description:"):
-            desc = re.sub(r"^description:[ \t]*", "", l)
+    for ln in fm_lines:
+        if not ind and ln.startswith("description:"):
+            desc = re.sub(r"^description:[ \t]*", "", ln)
             ind = True
             continue
         if ind:
-            if re.match(r"^[A-Za-z0-9_-]+:[ \t]", l):
+            if re.match(r"^[A-Za-z0-9_-]+:[ \t]", ln):
                 break
-            desc = desc + " " + re.sub(r"^\s+", "", l)
+            desc = desc + " " + re.sub(r"^\s+", "", ln)
     desc = unquote(desc.strip())
     if not desc:
         err("desc-present", "Frontmatter is missing a non-empty description.")

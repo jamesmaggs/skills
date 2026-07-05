@@ -21,6 +21,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 # Repo-wide manifest constants.
 AUTHOR_NAME = "James Maggs"
@@ -32,7 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
 
 
-def die(msg, code):
+def die(msg, code) -> NoReturn:
     print(msg, file=sys.stderr)
     sys.exit(code)
 
