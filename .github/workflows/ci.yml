@@ -1,0 +1,35 @@
+name: ci
+
+# Backstop for the local pre-commit hook: lint + typecheck the Python scripts,
+# then lint every SKILL.md against the Agent Skills spec, on push to main.
+# Deterministic and offline — no secrets.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Lint and typecheck Python
+        # Runs first — the skill lint below invokes lint_skill.py.
+        # No errors or warnings allowed. Pinned to match the local dev tools.
+        run: |
+          python3 -m pip install --quiet ruff==0.15.20 pyright==1.1.411
+          ruff check .
+          pyout="$(pyright 2>&1)" || true
+          echo "$pyout"
+          echo "$pyout" | grep -qE '^0 errors, 0 warnings,'
+
+      - name: Lint SKILL.md files
+        # Top-level skills only — evals/files/* hold intentionally malformed fixtures.
+        run: |
+          status=0
+          for skill_md in skills/*/SKILL.md; do
+            [ -e "$skill_md" ] || continue
+            python3 skills/skill-linter/scripts/lint_skill.py "$skill_md" || status=1
+          done
+          exit "$status"

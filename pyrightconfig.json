@@ -1,0 +1,5 @@
+{
+  "include": ["scripts", "skills/*/scripts"],
+  "pythonVersion": "3.9",
+  "typeCheckingMode": "standard"
+}
