@@ -1,12 +1,12 @@
 ---
 name: skill-evaluator
-description: Measures a skill's real value programmatically — runs it in a Docker sandbox with the skill loaded vs a no-skill baseline, grades the traces with deterministic checks, and records a score that trends over time. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, benchmark, or measure a skill, prove it beats baseline, create or write evals for a skill, or track a skill's quality over time. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
+description: Measures a skill's real value programmatically and tracks it over time — runs the skill with its guidance versus a no-skill baseline and scores the difference. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, or benchmark a skill, prove it beats baseline, or create evals for a skill. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
 allowed-tools: Bash, Read, Write, Edit
 license: MIT
 compatibility: Requires Docker, python3, and the claude CLI.
 ---
 
-# Skill Evaluator Two
+# Skill Evaluator
 
 Judge a skill by what it **adds**, not how it reads. Every metric comes from running the
 skill headlessly and grading the trace — a skill can read beautifully and still change
@@ -32,15 +32,11 @@ Two flows: **author** an eval spec for a skill that lacks one, then **run** it.
 Produce `<skill>/evals/triggering.csv` and `<skill>/evals/outcome.json` per
 `references/eval-spec.md`. Read the target `SKILL.md` first, then:
 
-1. **triggering.csv** — positive prompts (explicit, implicit, contextual) the skill
-   should fire on, plus **negative controls** (`should_trigger=false`) it must stay quiet
-   on. Without negatives you can't catch over-triggering.
-2. **outcome.json** — 2–4 **discriminating** tasks: ones a no-skill baseline would fail
-   (if baseline already passes, the skill adds nothing measurable). Prefer deterministic
-   checks (`file_exists`, `command_ran`, `file_contains`, `output_matches`); reach for a
-   `rubric` check only when correctness genuinely needs judgement. Assert the *right
-   outcome*, never mere presence of a word. Add a `fixture` dir (seed files and/or a
-   `setup.sh` the prompt runs) when the task needs a starting state.
+1. **triggering.csv** — positive prompts the skill should fire on, plus **negative
+   controls** it must stay quiet on.
+2. **outcome.json** — 2–4 **discriminating** tasks (ones a no-skill baseline would fail),
+   each with checks: deterministic where possible, a `rubric` check only where
+   correctness needs judgement. Add a `fixture` dir when the task needs a starting state.
 3. Validate: `python3 scripts/validate_spec.py --skill <skill-dir>`. Fix every error.
 
 **Done when** `validate_spec.py` reports 0 errors and every outcome case is one you
