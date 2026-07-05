@@ -16,7 +16,7 @@ The script is the source of truth. Run it, then relay what it reports — do not
 form your own opinion of the skill by reading the file.
 
 ```bash
-bash scripts/lint_skill.sh <path-to-skill-dir> [--json]
+python3 scripts/lint_skill.py <path-to-skill-dir> [--json]
 ```
 
 It exits `0` when there are no errors (warnings are allowed), `1` when any error
