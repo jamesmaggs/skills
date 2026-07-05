@@ -141,6 +141,13 @@ def run_check(check, workdir, parsed, rubric_fn=None):
         m = re.search(check["pattern"], text)
         return _result(check, bool(m), f"matched {m.group(0)!r}" if m else "pattern not found")
 
+    if ct == "file_lacks":
+        path = workdir / check["path"]
+        if not path.exists():
+            return _result(check, True, f"file absent, so pattern not present: {check['path']}")
+        m = re.search(check["pattern"], path.read_text(errors="replace"))
+        return _result(check, not m, f"unexpectedly matched {m.group(0)!r}" if m else "pattern absent (good)")
+
     if ct == "command_ran":
         pat = check["pattern"]
         for cmd in parsed["commands"]:

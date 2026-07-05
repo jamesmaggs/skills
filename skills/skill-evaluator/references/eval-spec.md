@@ -76,6 +76,7 @@ they isolate whether the guidance itself helps, independent of triggering.)
 | `file_exists` | `path` | `path` (relative to `/work`) exists after the run |
 | `file_absent` | `path` | `path` does not exist |
 | `file_contains` | `path`, `pattern` | `pattern` (regex) is found in the file |
+| `file_lacks` | `path`, `pattern` | `pattern` (regex) is NOT found in the file (passes if the file is absent) |
 | `command_ran` | `pattern` | `pattern` (regex) matches some `Bash` command in the trace |
 | `output_matches` | `pattern` | `pattern` (regex) is found in the final assistant text |
 

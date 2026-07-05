@@ -19,12 +19,14 @@ CHECK_TYPES = {
     "file_exists": ["path"],
     "file_absent": ["path"],
     "file_contains": ["path", "pattern"],
+    "file_lacks": ["path", "pattern"],
     "command_ran": ["pattern"],
     "output_matches": ["pattern"],
     "rubric": ["criterion"],
 }
 DETERMINISTIC = {
-    "file_exists", "file_absent", "file_contains", "command_ran", "output_matches",
+    "file_exists", "file_absent", "file_contains", "file_lacks",
+    "command_ran", "output_matches",
 }
 
 
