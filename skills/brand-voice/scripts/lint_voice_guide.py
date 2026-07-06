@@ -70,8 +70,8 @@ def main():
             if after != "(":
                 errors.append(f"Line {nr}: unfilled template placeholder {m.group(0)}")
 
-        # Section heading (## but not ###).
-        if re.match(r"^##[ \t]", line) and not line.startswith("###"):
+        # Section heading (## but not ###; the [ \t] after ## already excludes ###).
+        if re.match(r"^##[ \t]", line):
             sec = line[2:].strip()
             secseen.add(sec)
             if sec.startswith("The Voice"):
@@ -109,12 +109,9 @@ def main():
     found = {}
     for row in load_table("Tone of Voice Dimensions"):
         c = parse_row(row)
-        if len(c) >= 1:
-            found[c[0]] = {
-                "score": c[1] if len(c) >= 2 else "",
-                "pos": c[2] if len(c) >= 3 else "",
-                "rat": c[3] if len(c) >= 4 else "",
-            }
+        if c:
+            c += [""] * (4 - len(c))  # pad so missing cells read as empty
+            found[c[0]] = {"score": c[1], "pos": c[2], "rat": c[3]}
     defaults = {}
     for name, lp, rp in DIMS:
         if name not in found:
@@ -166,14 +163,10 @@ def main():
             ctx, shift = c[0], c[1]
             if shift.lower().startswith("no score change"):
                 continue
-            if re.match(r"^.+:[ \t]*[0-9]+[ \t]*->[ \t]*[0-9]+", shift):
-                colon = shift.index(":")
-                dim = shift[:colon].strip()
-                rest = shift[colon + 1:]
-                ap = rest.index("->")
-                fromnum = int(rest[:ap].strip())
-                tm = re.search(r"[0-9]+", rest[ap + 2:])
-                tonum = int(tm.group()) if tm else 0
+            m = re.match(r"^([^:]+):[ \t]*([0-9]+)[ \t]*->[ \t]*([0-9]+)", shift)
+            if m:
+                dim = m.group(1).strip()
+                fromnum, tonum = int(m.group(2)), int(m.group(3))
                 if dim not in DIM_NAMES:
                     errors.append(f'Tone shift for "{ctx}" names unknown dimension "{dim}".')
                 elif dim in defaults and fromnum != defaults[dim]:
