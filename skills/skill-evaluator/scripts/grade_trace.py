@@ -30,6 +30,7 @@ def parse_trace(trace_path, skill_name=None):
     tool_uses = []
     stream_tool_names = []  # from partial stream events (survive an early-killed run)
     final_text = ""
+    assistant_text = ""  # stitched assistant text blocks (fallback for final_text)
     api_error = None  # set when the run failed at the API (auth, billing, rate limit)
     p = Path(trace_path)
     if not p.exists():
@@ -50,6 +51,8 @@ def parse_trace(trace_path, skill_name=None):
                 if item.get("type") == "tool_use":
                     tool_uses.append({"name": item.get("name", ""),
                                       "input": item.get("input", {}) or {}})
+                elif item.get("type") == "text":
+                    assistant_text += item.get("text", "")
         elif etype == "stream_event":
             se = event.get("event", {})
             if se.get("type") == "content_block_start":
@@ -64,17 +67,9 @@ def parse_trace(trace_path, skill_name=None):
                 api_error = (event.get("result") or event.get("error")
                              or f"API error (status {status})")
 
-    # Fallback: if no result event carried text, stitch assistant text blocks.
+    # Fallback: if no result event carried text, use the stitched assistant text.
     if not final_text:
-        for line in p.read_text(errors="replace").splitlines():
-            try:
-                event = json.loads(line)
-            except (json.JSONDecodeError, ValueError):
-                continue
-            if event.get("type") == "assistant":
-                for item in event.get("message", {}).get("content", []):
-                    if item.get("type") == "text":
-                        final_text += item.get("text", "")
+        final_text = assistant_text
 
     commands = [tu["input"].get("command", "")
                 for tu in tool_uses if tu["name"] == "Bash"]
@@ -120,8 +115,8 @@ def _result(check, passed, evidence):
             "pass": bool(passed), "evidence": evidence}
 
 
-# Bound bytes read and regex-scanned per check: the file may be attacker-written
-# (agent output), so cap it to guard the host against OOM and pathological regex.
+# Bound characters read and regex-scanned per check: the file may be
+# attacker-written (agent output), so cap it to guard against OOM and slow regex.
 MAX_SCAN = 2_000_000
 
 
@@ -184,15 +179,14 @@ def run_check(check, workdir, parsed, rubric_fn=None):
 
     if ct == "rubric":
         if rubric_fn is None:
-            return {"id": check.get("id", ""), "type": "rubric", "pass": None,
-                    "evidence": "undetermined (no grader supplied)"}
-        verdict = rubric_fn(check["criterion"], str(workdir), parsed)
-        p = verdict.get("pass")
+            p, evidence = None, "undetermined (no grader supplied)"
+        else:
+            verdict = rubric_fn(check["criterion"], str(workdir), parsed)
+            p, evidence = verdict.get("pass"), verdict.get("evidence", "")
         # Preserve None (grader error/timeout) so it's EXCLUDED from the score
         # rather than counted as a skill failure.
         return {"id": check.get("id", ""), "type": "rubric",
-                "pass": (None if p is None else bool(p)),
-                "evidence": verdict.get("evidence", "")}
+                "pass": (None if p is None else bool(p)), "evidence": evidence}
 
     return _result(check, False, f"unknown check type: {ct}")
 

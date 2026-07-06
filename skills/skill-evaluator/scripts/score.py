@@ -28,7 +28,7 @@ def _pass_rate(check_results):
     decided = [c for c in check_results if isinstance(c.get("pass"), bool)]
     if not decided:
         return 0.0
-    return sum(1 for c in decided if c["pass"]) / len(decided)
+    return sum(c["pass"] for c in decided) / len(decided)
 
 
 def compute_metrics(trigger_results, outcome_with, outcome_baseline):
@@ -55,12 +55,10 @@ def compute_metrics(trigger_results, outcome_with, outcome_baseline):
 
 def skill_version(skill_dir):
     manifest = Path(skill_dir) / ".claude-plugin" / "plugin.json"
-    if manifest.exists():
-        try:
-            return json.loads(manifest.read_text()).get("version", "unknown")
-        except json.JSONDecodeError:
-            pass
-    return "unknown"
+    try:
+        return json.loads(manifest.read_text()).get("version", "unknown")
+    except (OSError, json.JSONDecodeError):
+        return "unknown"
 
 
 def git_sha(repo_dir):

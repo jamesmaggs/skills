@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -84,18 +85,12 @@ def load_env_file(explicit, start):
 
 # --- sandbox + grader plumbing -------------------------------------------------
 
-def docker_ok():
+def _docker(*args, timeout=None):
+    """True if `docker <args>` exits 0; False if docker is missing or errors."""
     try:
-        return subprocess.run(["docker", "info"], capture_output=True, timeout=20).returncode == 0
+        return subprocess.run(["docker", *args], capture_output=True,
+                              timeout=timeout).returncode == 0
     except (OSError, subprocess.SubprocessError):
-        return False
-
-
-def image_exists():
-    try:
-        return subprocess.run(["docker", "image", "inspect", IMAGE],
-                              capture_output=True).returncode == 0
-    except OSError:
         return False
 
 
@@ -118,31 +113,44 @@ def run_in_sandbox(prompt, workdir, out_path, skill_dir=None, model=None,
     return grade_trace.parse_trace(out_path, skill_name=skill_name)
 
 
+def _run(prompt, wd, errors, **kw):
+    """Run one sandbox invocation in workdir `wd`, recording any API error."""
+    trace = wd / "trace.jsonl"
+    parsed = run_in_sandbox(prompt, wd, trace, **kw)
+    if parsed.get("api_error"):
+        errors.append(parsed["api_error"])
+    return trace, parsed
+
+
+def _verdict(obj):
+    return {"pass": bool(obj["pass"]), "evidence": str(obj.get("evidence", ""))}
+
+
 def _extract_verdict(stdout):
     """Pull {pass, evidence} out of a `claude -p --output-format json` grader run."""
     try:
         env = json.loads(stdout)
-        if isinstance(env, dict):
-            if "pass" in env:
-                return {"pass": bool(env["pass"]), "evidence": str(env.get("evidence", ""))}
-            res = env.get("result")
-            if isinstance(res, str):
-                try:
-                    obj = json.loads(res)
-                    if isinstance(obj, dict) and "pass" in obj:
-                        return {"pass": bool(obj["pass"]), "evidence": str(obj.get("evidence", ""))}
-                except json.JSONDecodeError:
-                    pass
-            if isinstance(res, dict) and "pass" in res:
-                return {"pass": bool(res["pass"]), "evidence": str(res.get("evidence", ""))}
     except json.JSONDecodeError:
-        pass
+        env = None
+    # Precedence: the envelope itself, then its `result` (JSON string or dict).
+    candidates = []
+    if isinstance(env, dict):
+        candidates.append(env)
+        res = env.get("result")
+        if isinstance(res, str):
+            try:
+                candidates.append(json.loads(res))
+            except json.JSONDecodeError:
+                pass
+        elif isinstance(res, dict):
+            candidates.append(res)
+    for obj in candidates:
+        if isinstance(obj, dict) and "pass" in obj:
+            return _verdict(obj)
     # Last resort: find a {...} with "pass".
-    import re
     for m in re.finditer(r"\{[^{}]*\"pass\"[^{}]*\}", stdout):
         try:
-            obj = json.loads(m.group(0))
-            return {"pass": bool(obj["pass"]), "evidence": str(obj.get("evidence", ""))}
+            return _verdict(json.loads(m.group(0)))
         except (json.JSONDecodeError, KeyError):
             continue
     return {"pass": None, "evidence": "could not parse grader output"}
@@ -196,11 +204,8 @@ def eval_triggering(skill_dir, rows, model, runs, threshold, timeout, workbase, 
         fires = 0
         for _ in range(runs):
             wd = Path(tempfile.mkdtemp(dir=workbase))
-            trace = wd / "trace.jsonl"
-            parsed = run_in_sandbox(row["prompt"], wd, trace, skill_dir=skill_dir,
-                                    model=model, timeout=timeout, skill_name=skill_name)
-            if parsed.get("api_error"):
-                errors.append(parsed["api_error"])
+            _, parsed = _run(row["prompt"], wd, errors, skill_dir=skill_dir,
+                             model=model, timeout=timeout, skill_name=skill_name)
             if parsed["triggered"]:
                 fires += 1
         rate = fires / runs if runs else 0.0
@@ -232,19 +237,16 @@ def eval_outcome(skill_dir, cases, model, rubric_fn, timeout, workbase, skill_na
             wd = Path(tempfile.mkdtemp(dir=workbase))
             if case.get("fixture"):
                 shutil.copytree(evals_dir / case["fixture"], wd, dirs_exist_ok=True)
-            trace = wd / "trace.jsonl"
             # Value is CONDITIONAL on the skill's guidance being applied: inject it
             # into the with-skill run; baseline gets nothing. (Whether the skill
             # fires on its own is the separate triggering metric.) Both configs
             # are graded with the SAME checks so the pass rates are comparable.
-            parsed = run_in_sandbox(
-                case["prompt"], wd, trace, skill_dir=None,
+            trace, parsed = _run(
+                case["prompt"], wd, errors, skill_dir=None,
                 model=model, timeout=timeout,
                 system_hint=(guidance if use_skill else None),
                 skill_name=skill_name,
             )
-            if parsed.get("api_error"):
-                errors.append(parsed["api_error"])
             checks = grade_trace.grade(case["checks"], wd, trace,
                                        rubric_fn=rubric_fn, parsed=parsed)
             configs[label] = {"checks": checks}
@@ -307,9 +309,9 @@ def main():
         die(f"sandbox runner missing: {RUN_DOCKER}")
     if not os.environ.get("ANTHROPIC_API_KEY"):
         die("ANTHROPIC_API_KEY is not set — the sandboxed claude needs it to authenticate")
-    if not docker_ok():
+    if not _docker("info", timeout=20):
         die("the Docker daemon is not running — start Docker and retry")
-    if not image_exists():
+    if not _docker("image", "inspect", IMAGE):
         die(f"sandbox image '{IMAGE}' not found — run: bash {HERE / 'build_image.sh'}")
 
     skill_name = skill_dir.name
@@ -343,7 +345,7 @@ def main():
                   "include API credits.", file=sys.stderr)
 
     metrics = score.compute_metrics(trig, all_with, all_baseline)
-    record = score.build_record(skill_dir, skill_dir.name, args.model, metrics,
+    record = score.build_record(skill_dir, skill_name, args.model, metrics,
                                 {"triggering": trig, "outcome": per_case})
     record["api_errors"] = len(api_errors)
 
@@ -356,7 +358,7 @@ def main():
     hist_path = score.append_history(skill_dir, record)
 
     # Human summary.
-    print(f"\n== {skill_dir.name} @ {args.model} ==", file=sys.stderr)
+    print(f"\n== {skill_name} @ {args.model} ==", file=sys.stderr)
     print(f"  trigger_accuracy : {metrics['trigger_accuracy']:.2f}", file=sys.stderr)
     print(f"  outcome_pass_rate: {metrics['outcome_pass_rate']:.2f} "
           f"(baseline {metrics['baseline_pass_rate']:.2f})", file=sys.stderr)

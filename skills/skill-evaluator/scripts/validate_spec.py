@@ -16,12 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from spec import validate  # noqa: E402
 
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser(description="Validate a skill's eval spec.")
-    ap.add_argument("--skill", required=True, help="Path to the skill directory")
+    ap.add_argument("--skill", required=True, type=Path, help="Path to the skill directory")
     args = ap.parse_args()
 
-    skill = Path(args.skill)
+    skill = args.skill
     if not (skill / "SKILL.md").exists():
         print(f"Error: no SKILL.md at {skill}", file=sys.stderr)
         sys.exit(2)
