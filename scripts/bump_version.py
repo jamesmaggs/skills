@@ -19,16 +19,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
-from pathlib import Path
-from typing import NoReturn
 
-ROOT = Path(__file__).resolve().parent.parent
-
-
-def die(msg, code) -> NoReturn:
-    print(msg, file=sys.stderr)
-    sys.exit(code)
+from _common import ROOT, die, write_json
 
 
 def main():
@@ -61,8 +53,7 @@ def main():
     new = f"{maj}.{minor}.{patch}"
 
     data["version"] = new
-    # indent=2 + ensure_ascii=False + trailing newline matches the manifest's format.
-    manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    write_json(manifest, data)
     print(f"Bumped '{args.name}' ({args.part}): {current} -> {new}")
 
 

@@ -19,9 +19,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
-from pathlib import Path
-from typing import NoReturn
+
+from _common import ROOT, die, write_json
 
 # Repo-wide manifest constants.
 AUTHOR_NAME = "James Maggs"
@@ -29,18 +28,7 @@ LICENSE = "MIT"
 REPOSITORY = "https://github.com/jamesmaggs/software-factory"
 DEFAULT_VERSION = "0.1.0"
 
-ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
-
-
-def die(msg, code) -> NoReturn:
-    print(msg, file=sys.stderr)
-    sys.exit(code)
-
-
-def write_json(path, obj):
-    # indent=2 + ensure_ascii=False + trailing newline matches jq's output.
-    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
 
 
 def main():
@@ -58,11 +46,14 @@ def main():
     if not MARKETPLACE.exists():
         die(f"Error: marketplace file not found: {MARKETPLACE}", 1)
 
+    # Read the existing manifest once (if any); reused for description + version.
+    existing = json.loads(manifest.read_text()) if manifest.exists() else None
+
     # Resolve the description: explicit argument wins; otherwise reuse the manifest's.
     if args.description is not None:
         desc = args.description
-    elif manifest.exists():
-        desc = json.loads(manifest.read_text()).get("description", "")
+    elif existing is not None:
+        desc = existing.get("description", "")
     else:
         die(f"Error: no description given and no existing manifest to reuse.\n"
             f"       Pass one: python3 scripts/register_plugin.py {name} \"<description>\"", 2)
@@ -70,9 +61,7 @@ def main():
         die("Error: description must not be empty.", 2)
 
     # Preserve an existing manifest version; new manifests start at the default.
-    version = DEFAULT_VERSION
-    if manifest.exists():
-        version = json.loads(manifest.read_text()).get("version", DEFAULT_VERSION)
+    version = existing.get("version", DEFAULT_VERSION) if existing is not None else DEFAULT_VERSION
 
     manifest.parent.mkdir(parents=True, exist_ok=True)
     write_json(manifest, {
