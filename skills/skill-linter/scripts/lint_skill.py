@@ -57,6 +57,14 @@ def main():
     def warn(cid, msg):
         checks.append((cid, "warning", False, msg))
 
+    def check(cid, passed, fail_msg="", *, warn_only=False):
+        if passed:
+            ok(cid)
+        elif warn_only:
+            warn(cid, fail_msg)
+        else:
+            err(cid, fail_msg)
+
     def emit_and_exit() -> NoReturn:
         errors = sum(1 for _, s, p, _ in checks if not p and s == "error")
         warns = sum(1 for _, s, p, _ in checks if not p and s == "warning")
@@ -106,28 +114,30 @@ def main():
             return ""
         return os.path.realpath(d) + "/" + b
 
-    def extract_md_links(path):
+    def md_links(content):
         links = []
-        try:
-            content = open(path, errors="replace").read()
-        except OSError:
-            return links
         for m in re.finditer(r"\]\(([^)]+)\)", content):
             t = m.group(1).split("#", 1)[0]
-            if not t:
+            if not t or "://" in t or t.startswith("mailto:") or not t.endswith(".md"):
                 continue
-            if "://" in t or t.startswith("mailto:"):
-                continue
-            if t.endswith(".md"):
-                links.append(t)
+            links.append(t)
         return links
+
+    def extract_md_links(path):
+        try:
+            with open(path, errors="replace") as f:
+                content = f.read()
+        except OSError:
+            return []
+        return md_links(content)
 
     # ---- read file ----
     if not os.path.isfile(skill_md):
         err("skill-md-exists", f"No SKILL.md found at {skill_md}")
         emit_and_exit()
 
-    text = open(skill_md, errors="replace").read()
+    with open(skill_md, errors="replace") as f:
+        text = f.read()
     lines = text.splitlines()
 
     first_line = lines[0] if lines else ""
@@ -157,26 +167,14 @@ def main():
         err("name-present", "Frontmatter is missing a non-empty name.")
     else:
         ok("name-present")
-        if len(name) > 64:
-            err("name-length", f"name is {len(name)} chars; max is 64.")
-        else:
-            ok("name-length")
-        if re.match(r"^[a-z0-9]+(-[a-z0-9]+)*$", name):
-            ok("name-charset")
-        else:
-            err("name-charset", f"name must be lowercase a-z, 0-9 and single hyphens, no leading/trailing or consecutive hyphens: '{name}'.")
-        if re.search(r"anthropic|claude", name, re.I):
-            err("name-reserved", "name contains a reserved word (anthropic, claude).")
-        else:
-            ok("name-reserved")
-        if re.search(r"<[^>]+>", name):
-            err("name-no-xml", "name contains XML tags.")
-        else:
-            ok("name-no-xml")
-        if name == skill_name:
-            ok("name-dir-match")
-        else:
-            err("name-dir-match", f"name '{name}' must match the skill directory name '{skill_name}'.")
+        check("name-length", len(name) <= 64, f"name is {len(name)} chars; max is 64.")
+        check("name-charset", bool(re.match(r"^[a-z0-9]+(-[a-z0-9]+)*$", name)),
+              f"name must be lowercase a-z, 0-9 and single hyphens, no leading/trailing or consecutive hyphens: '{name}'.")
+        check("name-reserved", not re.search(r"anthropic|claude", name, re.I),
+              "name contains a reserved word (anthropic, claude).")
+        check("name-no-xml", not re.search(r"<[^>]+>", name), "name contains XML tags.")
+        check("name-dir-match", name == skill_name,
+              f"name '{name}' must match the skill directory name '{skill_name}'.")
 
     # ---- description (with folded continuation lines) ----
     desc = ""
@@ -195,22 +193,16 @@ def main():
         err("desc-present", "Frontmatter is missing a non-empty description.")
     else:
         ok("desc-present")
-        if len(desc) > 1024:
-            err("desc-length", f"description is {len(desc)} chars; max is 1024.")
-        else:
-            ok("desc-length")
-        if re.search(r"<[^>]+>", desc):
-            err("desc-no-xml", "description contains XML tags.")
-        else:
-            ok("desc-no-xml")
-        if re.search(r"(^|[^a-z])(i can|i'll|i'm|i will|i help|i'd|i am|let me|you can use|you should use|use me to)([^a-z]|$)", desc, re.I):
-            warn("desc-third-person", "description may be written in first/second person (e.g. 'I can help you'). It is injected into the system prompt and should read in third person.")
-        else:
-            ok("desc-third-person")
-        if re.search(r"use when|use this|when the user|when working|use it when|use whenever", desc, re.I):
-            ok("desc-when-cue")
-        else:
-            warn("desc-when-cue", "description may not say WHEN to use the skill (no 'use when / when the user' cue). It should carry both what it does and when to trigger.")
+        check("desc-length", len(desc) <= 1024, f"description is {len(desc)} chars; max is 1024.")
+        check("desc-no-xml", not re.search(r"<[^>]+>", desc), "description contains XML tags.")
+        check("desc-third-person",
+              not re.search(r"(^|[^a-z])(i can|i'll|i'm|i will|i help|i'd|i am|let me|you can use|you should use|use me to)([^a-z]|$)", desc, re.I),
+              "description may be written in first/second person (e.g. 'I can help you'). It is injected into the system prompt and should read in third person.",
+              warn_only=True)
+        check("desc-when-cue",
+              bool(re.search(r"use when|use this|when the user|when working|use it when|use whenever", desc, re.I)),
+              "description may not say WHEN to use the skill (no 'use when / when the user' cue). It should carry both what it does and when to trigger.",
+              warn_only=True)
 
     # ---- body length ----
     body_line_count = body.count("\n") + 1 if body else 1
@@ -227,23 +219,18 @@ def main():
         return any(re.search(pattern, ln, re.I) for ln in body_greplines)
 
     # ---- windows paths ----
-    if body_matches(r"[A-Za-z0-9_.-]+\\[A-Za-z0-9_.\\-]+"):
-        warn("forward-slashes", "Body appears to contain Windows-style backslash paths. Use forward slashes everywhere.")
-    else:
-        ok("forward-slashes")
+    check("forward-slashes", not body_matches(r"[A-Za-z0-9_.-]+\\[A-Za-z0-9_.\\-]+"),
+          "Body appears to contain Windows-style backslash paths. Use forward slashes everywhere.",
+          warn_only=True)
 
     # ---- time-sensitive info ----
-    if body_matches(r"(as of\s+[0-9]{4}|before\s+[a-z]+\s+20[0-9][0-9]|after\s+[a-z]+\s+20[0-9][0-9]|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+20[0-9][0-9])"):
-        warn("time-sensitive", "Body contains time-sensitive phrasing (a month/year or before/after a date). Move it into an 'old patterns' section so it does not go stale.")
-    else:
-        ok("time-sensitive")
+    check("time-sensitive",
+          not body_matches(r"(as of\s+[0-9]{4}|before\s+[a-z]+\s+20[0-9][0-9]|after\s+[a-z]+\s+20[0-9][0-9]|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+20[0-9][0-9])"),
+          "Body contains time-sensitive phrasing (a month/year or before/after a date). Move it into an 'old patterns' section so it does not go stale.",
+          warn_only=True)
 
     # ---- references: existence, one-level-deep, TOC ----
-    import tempfile
-    tmp = tempfile.NamedTemporaryFile("w", suffix=".md", delete=False)
-    tmp.write(body + "\n")
-    tmp.close()
-    body_link_list = extract_md_links(tmp.name)
+    body_link_list = md_links(body + "\n")
 
     skill_md_resolved = resolve(skill_dir, os.path.basename(skill_md))
     body_refs = ""
@@ -256,7 +243,8 @@ def main():
         if not os.path.isfile(rp):
             missing += " " + link
             continue
-        rtext = open(rp, errors="replace").read()
+        with open(rp, errors="replace") as f:
+            rtext = f.read()
         rlines = rtext.count("\n")
         if rlines > 100:
             head = rtext.splitlines()[:15]
@@ -268,16 +256,12 @@ def main():
                 continue
             if nrp not in body_refs:
                 nested += f" {link}->{nlink}"
-    os.unlink(tmp.name)
 
-    if missing:
-        warn("ref-exists", f"SKILL.md links to file(s) that do not exist:{missing}")
-    else:
-        ok("ref-exists")
-    if nested:
-        warn("ref-one-level-deep", f"Found nested references (a reference file linking to a file not linked from SKILL.md):{nested}. Keep references one level deep.")
-    else:
-        ok("ref-one-level-deep")
+    check("ref-exists", not missing,
+          f"SKILL.md links to file(s) that do not exist:{missing}", warn_only=True)
+    check("ref-one-level-deep", not nested,
+          f"Found nested references (a reference file linking to a file not linked from SKILL.md):{nested}. Keep references one level deep.",
+          warn_only=True)
 
     # ---- generic file names ----
     generic = ""
@@ -285,10 +269,9 @@ def main():
         for fn in filenames:
             if fn.endswith(".md") and GENERIC_RE.match(fn):
                 generic += fn + " "
-    if generic:
-        warn("file-names", f"Generic/uninformative file names found: {generic}. Name files by content so Claude can navigate by name.")
-    else:
-        ok("file-names")
+    check("file-names", not generic,
+          f"Generic/uninformative file names found: {generic}. Name files by content so Claude can navigate by name.",
+          warn_only=True)
 
     emit_and_exit()
 
