@@ -10,7 +10,7 @@ compatibility: Requires a POSIX shell.
 
 ### Step 1: Locate the ADR directory
 
-Search for an existing directory, in this order: `docs/adr`, `docs/adrs`, `doc/adr`, `adr`, `decisions`. Use the first that exists, and match the convention of the files already in it (number width, filename style, section headers). If none exists, default to `docs/adr/` and create it. Note whether a `README.md` index is present in that directory.
+Search for an existing directory, in this order: `docs/adr`, `docs/adrs`, `doc/adr`, `adr`, `decisions`. Use the first that exists. If it already contains ADRs, note their conventions — filename style (number width, slug) and content structure (which sections, in what order) — and match them in Step 3. If none exists, default to `docs/adr/` and create it. Note whether a `README.md` index is present in that directory.
 
 ### Step 2: Choose the operation and qualify the decision
 
@@ -22,23 +22,24 @@ Determine which operation is being requested:
 
 A **status change** needs only the target ADR and its new status — skip to Step 5.
 
-Before writing a **new** or **supersede** record, confirm the decision earns one. Record it only when **all three** hold:
+Before writing a **new** or **supersede** record, confirm the decision earns one. An ADR is worth it only when the decision is **both**:
 
-- **Hard to reverse** — unwinding it later carries real cost (a database, a message bus, a public API shape, a context boundary), not a quick edit.
-- **Surprising without the record** — a future reader would question the choice and need the *why*, rather than nodding it through.
-- **The result of a real trade-off** — genuine alternatives existed and one was chosen deliberately.
+- **Consequential** — it shapes the system or a quality attribute (scalability, security…), creates a long-lived constraint, or would cost days-to-weeks (not minutes) to reverse.
+- **Non-obvious** — real alternatives were on the table and the rationale needs preserving to avoid repeat debates, or the choice needs alignment across more than one team.
 
-Most decisions fail this bar — following an existing pattern, taking the obvious default, a choice with no real alternative — and need **no** ADR. If a decision doesn't clear all three, say so and stop rather than recording noise; when unsure, ask the user whether it rises to an ADR rather than defaulting to writing one.
+A decision that is easy to reverse, obvious, or had no real alternative fails the bar — don't document every minor choice (picking a JSON library, naming a component, following a standard pattern). If it isn't **both**, say so and stop rather than recording noise; when unsure, ask the user whether it needs an ADR rather than defaulting to writing one.
 
 A qualifying record then needs: a title, the context and drivers, **at least two considered options**, the chosen decision, and its consequences. If any are absent from the request or the conversation, ask for them — do not invent options, rationale, or consequences.
 
 ### Step 3: Write a new ADR
 
-- **Number:** the highest `NNNN` among existing `NNNN-*.md` files, plus one; zero-padded to four digits (first ADR is `0001`).
-- **Filename:** `NNNN-kebab-cased-title.md`.
+The formats below are the skill's defaults; when the directory already contains ADRs, match their filename and section conventions (noted in Step 1) instead.
+
+- **Number:** the highest existing number plus one, padded to the width the existing files use; in an empty directory, zero-pad to four digits (first ADR is `0001`).
+- **Filename:** `<number>-kebab-cased-title.md`.
 - **Date:** use the output of `date +%F`; do not guess it.
 - **Status:** `Accepted`, unless the decision is not yet final — then `Proposed`.
-- **Body** — exactly these sections, in this order (one decision per record; keep each section tight):
+- **Body** — one decision per record; keep each section tight. Match the section structure of existing ADRs if there is one; otherwise use exactly these sections, in this order:
 
   ```markdown
   # NNNN. Title
