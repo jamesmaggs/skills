@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Creates atomic git commits with Conventional Commits messages, splitting unrelated changes and grouping coupled ones like code with its tests. Use when the user wants to record working-tree changes in git — "commit", "commit my changes", "stage and commit".
+description: Creates atomic git commits with Conventional Commits messages. Use when the user wants to record working-tree changes in git — "commit", "commit my changes", "stage and commit".
 allowed-tools: Bash
 license: MIT
 compatibility: Requires git.
