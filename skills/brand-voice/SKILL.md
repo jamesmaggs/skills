@@ -1,6 +1,7 @@
 ---
 name: brand-voice
-description: Establishes a brand's voice and tone through a structured interview, producing a fixed-schema markdown voice guide. Use when the user wants to define or document a brand voice, tone of voice, or voice-and-tone guidelines — including indirect asks like "how should the site sound?" or "what tone should our copy use?"
+description: Establishes a brand's voice and tone through a structured interview, producing a fixed-schema markdown voice guide.
+disable-model-invocation: true
 ---
 
 # Brand Voice
