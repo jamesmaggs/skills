@@ -94,13 +94,23 @@ Every check may carry an optional `id`. `pattern` is a Python regex (`re.search`
 Three **component** metrics (reported separately — a blend hides regressions) plus one
 headline composite:
 
-- **`trigger_accuracy`** ∈ [0,1] — fraction of `triggering.csv` rows that pass.
+- **`trigger_accuracy`** ∈ [0,1] — fraction of `triggering.csv` rows that pass. **N/A**
+  (null) for a user-invoked skill, which never fires on its own.
 - **`outcome_pass_rate`** ∈ [0,1] — fraction of all `outcome.json` checks that pass **with
   the skill's guidance applied**.
 - **`value_delta`** ∈ [−1,1] — `outcome_pass_rate(with skill) − outcome_pass_rate(baseline)`.
   This is the headline: it isolates what the skill *adds*. Negative means the skill hurt.
-- **`composite`** ∈ [0,100] — `100 · (0.25·trigger_accuracy + 0.35·outcome_pass_rate +
-  0.40·clamp(value_delta, 0, 1))`. Weights favour value and are tunable in `score.py`.
+- **`composite`** ∈ [0,100] — one of two recipes, chosen by invocation mode. Base weights
+  favour value and are tunable in `score.py`.
+
+**Two recipes for the composite.** Which one applies is decided by whether the skill can
+fire on its own (a `disable-model-invocation: true` skill cannot):
+
+- **Model-invoked** — weight all three:
+  `100 · (0.25·trigger_accuracy + 0.35·outcome_pass_rate + 0.40·clamp(value_delta, 0, 1))`.
+- **User-invoked** — triggering is unmeasured, so drop that term and renormalise the
+  remaining weights to sum to 1 (outcome ≈ 0.47, value ≈ 0.53):
+  `100 · (0.47·outcome_pass_rate + 0.53·clamp(value_delta, 0, 1))`.
 
 History is keyed by timestamp, git SHA, skill version, and **model**, so Haiku and Sonnet
 trend separately.

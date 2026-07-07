@@ -34,6 +34,28 @@ def evals_dir(skill_dir):
     return Path(skill_dir) / "evals"
 
 
+def is_user_invoked(skill_dir):
+    """True if the SKILL.md frontmatter sets `disable-model-invocation: true`.
+
+    A user-invoked skill never fires on its own, so triggering is not measured
+    and triggering.csv is optional.
+    """
+    try:
+        text = (Path(skill_dir) / "SKILL.md").read_text()
+    except OSError:
+        return False
+    if not text.startswith("---"):
+        return False
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return False
+    for line in parts[1].splitlines():
+        m = re.match(r"\s*disable-model-invocation\s*:\s*(\S+)", line)
+        if m:
+            return m.group(1).strip().strip("\"'").lower() == "true"
+    return False
+
+
 def is_safe_relpath(rel):
     """True if `rel` is a relative path with no leading slash and no '..' escape.
 
@@ -204,6 +226,13 @@ def _validate_outcome(ojson, ed):
 def validate(skill_dir):
     """Return (errors, warnings): lists of human-readable strings."""
     ed = evals_dir(skill_dir)
-    trig_errors, trig_warnings = _validate_triggering(ed / TRIGGERING_CSV)
+    tcsv = ed / TRIGGERING_CSV
+    # A user-invoked skill never triggers on its own; triggering.csv is optional.
+    # Validate it only when a model-invoked skill omits it, or when either kind
+    # ships one anyway (so a stray file is still checked for shape).
+    if is_user_invoked(skill_dir) and not tcsv.exists():
+        trig_errors, trig_warnings = [], []
+    else:
+        trig_errors, trig_warnings = _validate_triggering(tcsv)
     outcome_errors = _validate_outcome(ed / OUTCOME_JSON, ed)
     return trig_errors + outcome_errors, trig_warnings

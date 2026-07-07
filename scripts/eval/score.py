@@ -31,21 +31,37 @@ def _pass_rate(check_results):
     return sum(c["pass"] for c in decided) / len(decided)
 
 
-def compute_metrics(trigger_results, outcome_with, outcome_baseline):
-    """trigger_results: [{pass}]. outcome_*: flat lists of check-result dicts."""
-    trig_total = len(trigger_results)
-    trigger_accuracy = (sum(1 for r in trigger_results if r.get("pass")) / trig_total
-                        if trig_total else 0.0)
+def compute_metrics(trigger_results, outcome_with, outcome_baseline, has_triggering=True):
+    """trigger_results: [{pass}]. outcome_*: flat lists of check-result dicts.
+
+    Two recipes for the composite:
+    - model-invoked (`has_triggering=True`): weight all three components.
+    - user-invoked (`has_triggering=False`): nothing fires on its own, so drop
+      the triggering term and renormalise the remaining weights to sum to 1.
+      `trigger_accuracy` is reported as None.
+    """
     outcome_pass_rate = _pass_rate(outcome_with)
     baseline_pass_rate = _pass_rate(outcome_baseline)
     value_delta = outcome_pass_rate - baseline_pass_rate
-    composite = 100.0 * (
-        W_TRIGGER * trigger_accuracy
-        + W_OUTCOME * outcome_pass_rate
-        + W_VALUE * _clamp(value_delta)
-    )
+    if has_triggering:
+        trig_total = len(trigger_results)
+        trigger_accuracy = (sum(1 for r in trigger_results if r.get("pass")) / trig_total
+                            if trig_total else 0.0)
+        composite = 100.0 * (
+            W_TRIGGER * trigger_accuracy
+            + W_OUTCOME * outcome_pass_rate
+            + W_VALUE * _clamp(value_delta)
+        )
+        trig_out = round(trigger_accuracy, 4)
+    else:
+        denom = W_OUTCOME + W_VALUE
+        composite = 100.0 * (
+            (W_OUTCOME / denom) * outcome_pass_rate
+            + (W_VALUE / denom) * _clamp(value_delta)
+        )
+        trig_out = None
     return {
-        "trigger_accuracy": round(trigger_accuracy, 4),
+        "trigger_accuracy": trig_out,
         "outcome_pass_rate": round(outcome_pass_rate, 4),
         "baseline_pass_rate": round(baseline_pass_rate, 4),
         "value_delta": round(value_delta, 4),
@@ -97,8 +113,12 @@ def append_history(skill_dir, record):
 
 
 if __name__ == "__main__":
-    # Self-test with synthetic inputs.
+    # Self-test with synthetic inputs: both recipes.
     trig = [{"pass": True}, {"pass": True}, {"pass": False}]
     with_skill = [{"pass": True}, {"pass": True}, {"pass": True}]
     baseline = [{"pass": True}, {"pass": False}, {"pass": False}]
-    print(json.dumps(compute_metrics(trig, with_skill, baseline), indent=2))
+    print("model-invoked:",
+          json.dumps(compute_metrics(trig, with_skill, baseline), indent=2))
+    print("user-invoked :",
+          json.dumps(compute_metrics([], with_skill, baseline, has_triggering=False),
+                     indent=2))

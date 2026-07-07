@@ -290,12 +290,16 @@ def main():
             print(f"  [ERROR] {e}", file=sys.stderr)
         die("eval spec is invalid — fix it before running", 1)
 
-    rows = spec.load_triggering(skill_dir)
+    # A user-invoked skill never fires on its own, so triggering is not measured
+    # and its composite uses the triggerless recipe.
+    user_invoked = spec.is_user_invoked(skill_dir)
+    rows = [] if user_invoked else spec.load_triggering(skill_dir)
     cases = spec.load_outcome(skill_dir)
     n_rubric = sum(1 for c in cases for chk in c["checks"] if chk["type"] == "rubric")
 
-    plan = (f"skill={skill_dir.name} model={args.model} | "
-            f"triggering: {len(rows)} rows x {args.runs_per_trigger} runs | "
+    trig_plan = ("triggering: n/a (user-invoked)" if user_invoked
+                 else f"triggering: {len(rows)} rows x {args.runs_per_trigger} runs")
+    plan = (f"skill={skill_dir.name} model={args.model} | {trig_plan} | "
             f"outcome: {len(cases)} cases x 2 configs "
             f"({n_rubric} rubric checks{' — disabled' if args.no_rubric else ''})")
     print(plan, file=sys.stderr)
@@ -344,7 +348,8 @@ def main():
                   "(console.anthropic.com → Billing). A Claude subscription does not "
                   "include API credits.", file=sys.stderr)
 
-    metrics = score.compute_metrics(trig, all_with, all_baseline)
+    metrics = score.compute_metrics(trig, all_with, all_baseline,
+                                    has_triggering=not user_invoked)
     record = score.build_record(skill_dir, skill_name, args.model, metrics,
                                 {"triggering": trig, "outcome": per_case})
     record["api_errors"] = len(api_errors)
@@ -358,8 +363,10 @@ def main():
     hist_path = score.append_history(skill_dir, record)
 
     # Human summary.
+    ta = metrics["trigger_accuracy"]
     print(f"\n== {skill_name} @ {args.model} ==", file=sys.stderr)
-    print(f"  trigger_accuracy : {metrics['trigger_accuracy']:.2f}", file=sys.stderr)
+    print(f"  trigger_accuracy : {'n/a (user-invoked)' if ta is None else f'{ta:.2f}'}",
+          file=sys.stderr)
     print(f"  outcome_pass_rate: {metrics['outcome_pass_rate']:.2f} "
           f"(baseline {metrics['baseline_pass_rate']:.2f})", file=sys.stderr)
     print(f"  value_delta      : {metrics['value_delta']:+.2f}", file=sys.stderr)
