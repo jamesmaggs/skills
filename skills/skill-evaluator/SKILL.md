@@ -1,78 +1,82 @@
 ---
 name: skill-evaluator
-description: Measures a skill's real value programmatically and tracks it over time — runs the skill with its guidance versus a no-skill baseline and scores the difference. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, or benchmark a skill, prove it beats baseline, or create evals for a skill. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
+description: Evaluates whether a skill actually works — judges its calibration and triggering, then measures the value it adds by running each eval case with the skill's guidance versus a no-skill baseline and reporting the delta. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, benchmark, or prove the value of a skill, or create evals for one. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
 allowed-tools: Bash, Read, Write, Edit
 license: MIT
-compatibility: Requires Docker, python3, and the claude CLI.
 ---
 
 # Skill Evaluator
 
-Judge a skill by what it **adds**, not how it reads. Every metric comes from running the
-skill headlessly and grading the trace — a skill can read beautifully and still change
-nothing. The eval spec format, check types, and scoring live in
+Judge a skill by what it **adds**, not how it reads. A skill's worth is the gap between the
+model's performance *with* it and *without* it — a skill can read beautifully and still
+change nothing. That gap is measurable in whatever harness you are already in; no special
+tooling is required. The eval spec format, check types, and scoring live in
 [`references/eval-spec.md`](references/eval-spec.md); read it before authoring or judging.
 
-Two flows: **author** an eval spec for a skill that lacks one, then **run** it.
+Two flows: **author** an eval spec for a skill that lacks one, then **evaluate**.
 
-## Prerequisites (for running; authoring needs none)
-
-- Docker daemon running, and the sandbox image built once: `bash scripts/build_image.sh`.
-- `ANTHROPIC_API_KEY` available for the **sandboxed** runs — export it or put
-  `ANTHROPIC_API_KEY=sk-...` in a gitignored `.env` at the repo root (loaded
-  automatically; override with `--env-file`). These runs bill against **API credits**,
-  which a Claude subscription does not include.
-- The **rubric grader** runs on the host and uses your **subscription** by default (off
-  the API bill); pass `--grader-auth apikey` in CI where no subscription exists.
-- **Model policy:** default to **haiku** (cheapest, and where a skill adds the most
-  value); **sonnet** is the ceiling; **opus is rejected**.
-
-## Trust boundary
-
-The sandbox is hardened — dropped capabilities, no privilege escalation, read-only root
-filesystem, and CPU/memory/pid limits — and the host side refuses path traversal in
-fixtures and check paths, caps file reads, and runs the grader with no tools, no MCP, and
-empty settings so untrusted output can't drive it. **But the container needs network to
-reach the API and the API key lives inside it**, so a hostile skill with network access
-could exfiltrate the key. As shipped, evaluate **skills you trust**; running genuinely
-untrusted skills safely would need an egress-restricting proxy that keeps the key out of
-the container.
-
-## Author evals
+## Author an eval spec
 
 Produce `<skill>/evals/triggering.csv` and `<skill>/evals/outcome.json` per
 `references/eval-spec.md`. Read the target `SKILL.md` first, then:
 
 1. **triggering.csv** — positive prompts the skill should fire on, plus **negative
-   controls** it must stay quiet on.
+   controls** it must stay quiet on. Omit this file for a **user-invoked** skill
+   (`disable-model-invocation: true`): it never fires on its own, so triggering is moot.
 2. **outcome.json** — 2–4 **discriminating** tasks (ones a no-skill baseline would fail),
-   each with checks: deterministic where possible, a `rubric` check only where
-   correctness needs judgement. Add a `fixture` dir when the task needs a starting state.
-3. Validate: `python3 scripts/validate_spec.py --skill <skill-dir>`. Fix every error.
+   each with checks: deterministic where possible, a `rubric` check only where correctness
+   needs judgement. Add a `fixture` dir when the task needs a starting state.
+3. Check the spec against the format in `references/eval-spec.md`.
 
-**Done when** `validate_spec.py` reports 0 errors and every outcome case is one you
-believe baseline would fail.
+**Done when** the spec matches the format and every outcome case is one you believe
+baseline would fail.
 
-## Run evals
+## Evaluate
 
-1. Ensure the image is built (see Prerequisites).
-2. `python3 scripts/run_evals.py --skill <skill-dir> [--model haiku|sonnet] [--json]`.
-   Each triggering row runs with the skill available (does it fire?); each outcome case
-   runs twice — once with the skill's guidance injected, once at baseline — to isolate
-   the guidance's value. Use `--dry-run` first to confirm the plan.
-3. Read the summary: `trigger_accuracy`, `outcome_pass_rate` (vs `baseline_pass_rate`),
-   `value_delta`, and the `composite`. The run appends one line to
-   `<skill>/evals/results/history.jsonl`.
+Three parts. Value is decisive; the other two explain it.
+
+### Calibration — how it reads
+
+Walk the body and classify every passage **keep / cut / push**: keep what changes
+behaviour, cut what the model already does by default or says twice, push reference that
+belongs behind a pointer. Name all three categories even when one is empty. This measures
+form, not effectiveness — a skill can pass every check and still add nothing.
+
+### Triggering — would it fire
+
+Judge the **description** qualitatively: does it carry *what + when* in the third person,
+name the key terms, cover the phrasings a user would actually use, and avoid firing on
+near-misses or losing to a competing skill? For a **user-invoked** skill
+(`disable-model-invocation: true`), triggering is **N/A** — the user is the index; say so
+and skip it.
+
+### Value — what it adds (decisive)
+
+Run each `outcome.json` case **twice**: once with the skill's guidance in context, once at
+baseline (nothing). In Claude Code, spawn one subagent per configuration so they run in the
+same turn; elsewhere, run them yourself one at a time with fresh context each. Grade every
+run against the case's `checks`, recording `pass` + `evidence`, then compute
+`value_delta = with_skill_pass_rate − baseline_pass_rate`.
+
+Watch for non-discriminating checks (baseline passes them too) and presence-not-correctness
+traps — both make the delta lie. Flag them rather than trusting the number.
+
+This repo ships an optional local runner at `scripts/eval/` that automates these value runs
+in a Docker sandbox for CI and dashboards (see its README for prerequisites). Use it when
+present; the evaluation does not require it.
+
+**Done when** you have a measured with-vs-baseline delta — reason it through inline only
+when no run was possible, and label it as such.
 
 ## Report the verdict
 
-Lead with **`value_delta`** — it isolates what the skill adds; `trigger_accuracy` and
-`outcome_pass_rate` explain *why* it's high or low. Quote failing checks with their
-evidence. End with **ship / revise / rethink**:
+Lead with **`value_delta`** — it isolates what the skill adds; calibration and triggering
+explain *why* it is high or low. Quote failing checks with their evidence. End with
+**ship / revise / rethink**:
 
 - **ship** — clear positive `value_delta` and sound triggering.
 - **revise** — value is real but triggering misfires, or a few checks fail.
-- **rethink** — `value_delta` at or below zero: baseline already does the job, so the
-  skill earns its context cost only if it starts adding something.
+- **rethink** — `value_delta` at or below zero: baseline already does the job, so the skill
+  earns its context cost only if it starts adding something.
 
 Never call a skill effective from reading alone — cite the measured delta.

@@ -33,7 +33,7 @@
     {
       "name": "skill-evaluator",
       "source": "./skills/skill-evaluator",
-      "description": "Measure a skill's value programmatically in a sandbox and track the score over time."
+      "description": "Measure a skill's real value against a no-skill baseline, and author eval specs."
     },
     {
       "name": "skill-linter",

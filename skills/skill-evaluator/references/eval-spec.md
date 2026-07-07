@@ -11,8 +11,8 @@ how to measure that skill, independent of any runner. Two files plus optional fi
 evals/
 ├── triggering.csv        # does the skill fire on the right prompts?
 ├── outcome.json          # once running, does it produce the right result?
-├── files/<fixture>/      # optional starting state copied into the sandbox workdir
-└── results/history.jsonl # appended by the runner (one line per run) — do not hand-edit
+├── files/<fixture>/      # optional starting state copied into the run's working directory
+└── results/history.jsonl # appended by a runner (one line per run) — do not hand-edit
 ```
 
 ## `triggering.csv`
@@ -33,9 +33,10 @@ neg-01,false,"Explain how git rebase works"
 - `prompt` — a realistic user message. Cover explicit invocation, implicit phrasing, and
   contextual asks.
 
-The runner loads the skill, runs each prompt N times, and records whether the skill's
-`Skill`/`Read` tool fired. A row passes when `trigger_rate ≥ threshold` matches
-`should_trigger`.
+An evaluator runs each prompt with the skill available and observes whether it fires (in a
+tool-based harness, whether the skill's own tool was invoked). A row passes when the
+observed firing matches `should_trigger`. Omit this file for a user-invoked skill
+(`disable-model-invocation: true`), which never fires on its own.
 
 ## `outcome.json`
 
@@ -63,8 +64,8 @@ they isolate whether the guidance itself helps, independent of triggering.)
 ```
 
 - `id` — unique, kebab-case. `prompt` — the task. `fixture` (optional) — a dir under
-  `evals/` copied into the sandbox `/work` before the run (may hold seed files and/or a
-  `setup.sh` the prompt tells the agent to run).
+  `evals/` copied into the run's working directory before the run (may hold seed files
+  and/or a `setup.sh` the prompt tells the agent to run).
 - `checks` — one or more assertions. Each yields `{pass, evidence}`.
 
 ### Check types
@@ -73,7 +74,7 @@ they isolate whether the guidance itself helps, independent of triggering.)
 
 | type | fields | passes when |
 |---|---|---|
-| `file_exists` | `path` | `path` (relative to `/work`) exists after the run |
+| `file_exists` | `path` | `path` (relative to the working directory) exists after the run |
 | `file_absent` | `path` | `path` does not exist |
 | `file_contains` | `path`, `pattern` | `pattern` (regex) is found in the file |
 | `file_lacks` | `path`, `pattern` | `pattern` (regex) is NOT found in the file (passes if the file is absent) |
@@ -84,7 +85,7 @@ they isolate whether the guidance itself helps, independent of triggering.)
 
 | type | fields | passes when |
 |---|---|---|
-| `rubric` | `criterion` | a read-only grader run (`claude -p --json-schema '{pass,evidence}'`, on the ceiling model) judges the criterion met |
+| `rubric` | `criterion` | a read-only judgement of the criterion — a fresh model call returning `{pass, evidence}`, or the evaluator's own judgement — finds it met |
 
 Every check may carry an optional `id`. `pattern` is a Python regex (`re.search`).
 
