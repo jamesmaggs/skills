@@ -1,16 +1,12 @@
 ---
 name: adr
-description: Captures Architecture Decision Records (ADRs) in the streamlined MADR format — locates or creates the ADR directory, numbers and writes a new record (Context and drivers, Considered options, Decision, Consequences), maintains the README index, supersedes earlier records, and transitions their status. Use this skill whenever the user wants to record or capture an architectural or technical decision, write an ADR, add a decision record, supersede or deprecate an existing ADR, or mark one accepted.
+description: Captures Architecture Decision Records (ADRs) in the streamlined MADR format. Use when the user wants to record an architectural or technical decision, write an ADR, supersede or deprecate an existing one, or change an ADR's status.
 allowed-tools: Bash
 license: MIT
 compatibility: Requires a POSIX shell.
 ---
 
 # ADR
-
-## Instructions
-
-Follow these steps in order.
 
 ### Step 1: Locate the ADR directory
 
@@ -32,7 +28,7 @@ A **new** or **supersede** record needs: a title, the context and drivers, **at 
 - **Filename:** `NNNN-kebab-cased-title.md`.
 - **Date:** use the output of `date +%F`; do not guess it.
 - **Status:** `Accepted`, unless the decision is not yet final — then `Proposed`.
-- **Body** — exactly these sections, in this order:
+- **Body** — exactly these sections, in this order (one decision per record; keep each section tight):
 
   ```markdown
   # NNNN. Title
@@ -58,10 +54,3 @@ Write the new ADR (Step 3); its Decision should name the ADR it replaces. Then s
 ### Step 5: Change an ADR's status
 
 Update the `- Status:` line of the named ADR and its row in the index.
-
-## Conventions
-
-- Filenames: `NNNN-kebab-title.md`, zero-padded from `0001`.
-- Section order is fixed: Context and drivers → Considered options → Decision → Consequences.
-- Status lifecycle: `Proposed → Accepted → Superseded-by-NNNN` or `Deprecated`.
-- One decision per record; keep each section tight.
