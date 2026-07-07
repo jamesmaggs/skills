@@ -12,7 +12,7 @@ compatibility: Requires a POSIX shell.
 
 Search for an existing directory, in this order: `docs/adrs`, `docs/adr`, `doc/adr`, `adr`, `decisions`. Use the first that exists, and match the convention of the files already in it (number width, filename style, section headers). If none exists, default to `docs/adrs/` and create it. Note whether a `README.md` index is present in that directory.
 
-### Step 2: Choose the operation and gather inputs
+### Step 2: Choose the operation and qualify the decision
 
 Determine which operation is being requested:
 
@@ -20,7 +20,17 @@ Determine which operation is being requested:
 - **supersede** — a new decision replaces an earlier ADR
 - **status change** — move an existing ADR along its lifecycle (e.g. Proposed → Accepted, or → Deprecated)
 
-A **new** or **supersede** record needs: a title, the context and drivers, **at least two considered options**, the chosen decision, and its consequences. If any are absent from the request or the conversation, ask for them — do not invent options, rationale, or consequences.
+A **status change** needs only the target ADR and its new status — skip to Step 5.
+
+Before writing a **new** or **supersede** record, confirm the decision earns one. Record it only when **all three** hold:
+
+- **Hard to reverse** — unwinding it later carries real cost (a database, a message bus, a public API shape, a context boundary), not a quick edit.
+- **Surprising without the record** — a future reader would question the choice and need the *why*, rather than nodding it through.
+- **The result of a real trade-off** — genuine alternatives existed and one was chosen deliberately.
+
+Most decisions fail this bar — following an existing pattern, taking the obvious default, a choice with no real alternative — and need **no** ADR. If a decision doesn't clear all three, say so and stop rather than recording noise; when unsure, ask the user whether it rises to an ADR rather than defaulting to writing one.
+
+A qualifying record then needs: a title, the context and drivers, **at least two considered options**, the chosen decision, and its consequences. If any are absent from the request or the conversation, ask for them — do not invent options, rationale, or consequences.
 
 ### Step 3: Write a new ADR
 
