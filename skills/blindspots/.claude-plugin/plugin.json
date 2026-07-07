@@ -1,0 +1,10 @@
+{
+  "name": "blindspots",
+  "description": "Predict how a task is most likely to go wrong before starting it, and the fix for each.",
+  "version": "0.1.0",
+  "author": {
+    "name": "James Maggs"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jamesmaggs/software-factory"
+}
