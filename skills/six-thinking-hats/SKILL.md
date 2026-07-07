@@ -3,10 +3,8 @@ name: six-thinking-hats
 description: >-
   Reviews or pressure-tests an idea, plan, or decision by running a panel of six
   parallel sub-agents, each wearing one of Edward de Bono's Six Thinking Hats
-  (facts, feelings, caution, benefits, creativity, synthesis). Use when the user
-  wants thorough, multi-perspective coverage of a decision rather than a hot take
-  — e.g. "run this past the six thinking hats", "give me a 360 review", "what
-  angles am I missing", "stress-test this plan", or a go/no-go call.
+  (facts, feelings, caution, benefits, creativity, synthesis).
+disable-model-invocation: true
 ---
 
 # Six Thinking Hats
