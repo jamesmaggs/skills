@@ -176,6 +176,17 @@ def main():
         check("name-dir-match", name == skill_name,
               f"name '{name}' must match the skill directory name '{skill_name}'.")
 
+    # ---- invocation mode ----
+    # A user-invoked skill (disable-model-invocation: true) is never reached by
+    # the model, so its description is human-facing and should have trigger cues
+    # stripped — the opposite of what a model-invoked description needs.
+    user_invoked = False
+    for ln in fm_lines:
+        m = re.match(r"disable-model-invocation:[ \t]*(\S+)", ln)
+        if m:
+            user_invoked = unquote(m.group(1).strip()).lower() == "true"
+            break
+
     # ---- description (with folded continuation lines) ----
     desc = ""
     ind = False
@@ -199,10 +210,16 @@ def main():
               not re.search(r"(^|[^a-z])(i can|i'll|i'm|i will|i help|i'd|i am|let me|you can use|you should use|use me to)([^a-z]|$)", desc, re.I),
               "description may be written in first/second person (e.g. 'I can help you'). It is injected into the system prompt and should read in third person.",
               warn_only=True)
-        check("desc-when-cue",
-              bool(re.search(r"use when|use this|when the user|when working|use it when|use whenever", desc, re.I)),
-              "description may not say WHEN to use the skill (no 'use when / when the user' cue). It should carry both what it does and when to trigger.",
-              warn_only=True)
+        when_cue = bool(re.search(
+            r"use when|use this|when the user|when working|use it when|use whenever", desc, re.I))
+        if user_invoked:
+            check("desc-when-cue", not when_cue,
+                  "user-invoked skill: the description is human-facing, so strip trigger cues (found a 'use when / when the user' phrase).",
+                  warn_only=True)
+        else:
+            check("desc-when-cue", when_cue,
+                  "description may not say WHEN to use the skill (no 'use when / when the user' cue). It should carry both what it does and when to trigger.",
+                  warn_only=True)
 
     # ---- body length ----
     body_line_count = body.count("\n") + 1 if body else 1

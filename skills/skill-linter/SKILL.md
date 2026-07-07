@@ -1,6 +1,7 @@
 ---
 name: skill-linter
-description: Runs fast, deterministic, rule-based checks on a SKILL.md against the official Agent Skills spec (frontmatter limits, body length, one-level-deep references, path style, time-sensitive content) and reports errors plus heuristic warnings. Use when the user wants to lint, validate, check, or spec-check a skill, fix frontmatter problems, or verify a skill before publishing, even if they just say "check my SKILL.md". For judging writing quality or whether a skill actually improves task performance, use skill-evaluator instead.
+description: Deterministically checks a SKILL.md against the official Agent Skills spec — frontmatter limits, body length, one-level-deep references, path style, time-sensitive content — reporting errors plus heuristic warnings.
+disable-model-invocation: true
 ---
 
 # Skill Linter
