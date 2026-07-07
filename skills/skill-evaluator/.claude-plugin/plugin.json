@@ -1,7 +1,7 @@
 {
   "name": "skill-evaluator",
   "description": "Measure a skill's real value against a no-skill baseline, and author eval specs.",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "author": {
     "name": "James Maggs"
   },
