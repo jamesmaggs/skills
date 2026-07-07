@@ -13,8 +13,10 @@ skill is *well-formed*, not whether it is *good* or *effective*. For those, use
 
 ## How to run
 
-The script is the source of truth. Run it, then relay what it reports — do not
-form your own opinion of the skill by reading the file.
+The script is the source of truth — run it and relay what it reports; never
+substitute your own read-through. Several checks turn on exact quantities a reader
+can't judge by eye (description length in characters, body length in lines,
+reserved-word matching), and eyeballing is exactly where those get missed.
 
 ```bash
 python3 scripts/lint_skill.py <path-to-skill-dir> [--json]
@@ -22,14 +24,9 @@ python3 scripts/lint_skill.py <path-to-skill-dir> [--json]
 
 It exits `0` when there are no errors (warnings are allowed), `1` when any error
 is found, and `2` if the path can't be read. Use `--json` to parse the result
-programmatically; otherwise read the human-readable report.
-
-Always run the script; never substitute a read-through. Several checks turn on
-exact quantities a reader cannot judge by eye — the description length in
-characters, the body length in lines, reserved-word matching — and eyeballing is
-exactly where those get missed. After running it, report the verdict line and the
-specific errors and warnings it printed, quoting its findings rather than
-paraphrasing your own impression of the file.
+programmatically; otherwise read the human-readable report. After running it,
+report the verdict line and quote the specific errors and warnings rather than
+paraphrasing.
 
 ## How to interpret the output
 
