@@ -1,6 +1,7 @@
 ---
 name: blindspots
-description: Surfaces how a task is most likely to go wrong before it is attempted, and the one instruction that would prevent each blind spot, then waits for the user to close the gaps. Use when the user wants to de-risk a task before it begins, or asks "how might you get this wrong", "what are you assuming", or "what am I missing".
+description: Surfaces how a task is most likely to go wrong before it is attempted, and the one instruction that would prevent each blind spot, then waits for the user to close the gaps.
+disable-model-invocation: true
 ---
 
 # Blindspots
