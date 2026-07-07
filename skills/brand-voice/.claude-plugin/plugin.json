@@ -1,7 +1,7 @@
 {
   "name": "brand-voice",
   "description": "Establish a brand's voice and tone through a structured interview, output as a fixed-schema guide.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "James Maggs"
   },
