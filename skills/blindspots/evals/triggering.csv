@@ -1,8 +1,0 @@
-id,should_trigger,prompt
-derisk-explicit,true,"Before you build the login form, predict how you might get it wrong."
-whats-missing,true,"I want you to add caching to the API — what am I missing before you start?"
-assumptions,true,"Here's the task: migrate the config from JSON to YAML. What are you assuming?"
-predict-failure,true,"Predict how you'll fail at writing this CSV parser before you write it."
-plain-task,false,"Write a Python function that reverses a string."
-grill-plan,false,"Grill me on my rollout plan before we build it."
-multi-perspective,false,"Review this pricing idea from several different angles."

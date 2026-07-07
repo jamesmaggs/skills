@@ -1,8 +1,0 @@
-# Eval fixtures are built at run time by each scenario's setup.sh.
-# Never commit the built repos — they contain a nested .git and would otherwise
-# be recorded as embedded git repositories (gitlinks).
-fetchkit/
-sdk/
-linted-project/
-webapp/
-apiclient/

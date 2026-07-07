@@ -1,7 +1,0 @@
-id,should_trigger,prompt
-commit-explicit,true,"Commit my changes"
-commit-implicit,true,"I'm done — stage what I changed and record it in git"
-commit-convention,true,"Record these working-tree changes in git following the project's conventions"
-neg-explain,false,"Explain what a git rebase does"
-neg-diff,false,"Show me the diff between my branch and main"
-neg-status,false,"What files have I changed so far?"
