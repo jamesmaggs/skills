@@ -1,6 +1,6 @@
 ---
 name: skill-evaluator
-description: Evaluates whether a skill actually works — judges its calibration and triggering, then measures the value it adds by running each eval case with the skill's guidance versus a no-skill baseline and reporting the delta. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, benchmark, or prove the value of a skill, or create evals for one. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
+description: Evaluates whether a skill actually works: grades how it is written, then measures what it adds by running it against a no-skill baseline. Also authors an eval spec for a skill that has none. Use when the user wants to evaluate, score, benchmark, or prove the value of a skill, or create evals for one. For mechanical spec compliance (frontmatter, paths, length) use skill-linter instead.
 allowed-tools: Bash, Read, Write, Edit
 license: MIT
 ---
