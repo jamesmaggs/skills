@@ -10,7 +10,7 @@ compatibility: Requires a POSIX shell.
 
 ### Step 1: Locate the ADR directory
 
-Search for an existing directory, in this order: `docs/adrs`, `docs/adr`, `doc/adr`, `adr`, `decisions`. Use the first that exists, and match the convention of the files already in it (number width, filename style, section headers). If none exists, default to `docs/adrs/` and create it. Note whether a `README.md` index is present in that directory.
+Search for an existing directory, in this order: `docs/adr`, `docs/adrs`, `doc/adr`, `adr`, `decisions`. Use the first that exists, and match the convention of the files already in it (number width, filename style, section headers). If none exists, default to `docs/adr/` and create it. Note whether a `README.md` index is present in that directory.
 
 ### Step 2: Choose the operation and qualify the decision
 

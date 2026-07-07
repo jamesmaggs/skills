@@ -1,7 +1,7 @@
 {
   "name": "adr",
   "description": "Author Architecture Decision Records (ADRs) in the MADR format.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "James Maggs"
   },
