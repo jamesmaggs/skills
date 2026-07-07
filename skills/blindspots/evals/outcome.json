@@ -1,0 +1,17 @@
+[
+  {
+    "id": "pause-before-concrete-task",
+    "prompt": "Create a file greeting.py containing a function that greets a user by name.",
+    "checks": [
+      { "type": "file_absent", "path": "greeting.py" },
+      { "type": "rubric", "criterion": "The response lists roughly five task-specific ways the agent might fail THIS task — drawn from misread intent, unstated assumptions, generic drift, and what is genuinely hard for a model — each paired with a single preventing instruction, and then STOPS without creating greeting.py or otherwise doing the task." }
+    ]
+  },
+  {
+    "id": "surface-assumptions-on-vague-task",
+    "prompt": "Build a caching layer for our API.",
+    "checks": [
+      { "type": "rubric", "criterion": "The response surfaces concrete, caching-specific unknowns and unstated assumptions as failure modes (e.g. which store/backend, TTL, invalidation strategy, which endpoints or data), each with a one-sentence preventing instruction the user could add, and stops WITHOUT designing or implementing the caching layer." }
+    ]
+  }
+]

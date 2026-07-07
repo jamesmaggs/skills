@@ -9,3 +9,6 @@
 
 # Secrets
 .env
+
+# Eval run artifacts (appended by a runner — regenerated, not hand-authored)
+skills/*/evals/results/
