@@ -17,10 +17,9 @@ Exit codes: 0 = success, 1 = errors, 2 = usage error / missing skill or manifest
 from __future__ import annotations
 
 import argparse
-import json
 import re
 
-from _common import ROOT, die, write_json
+from _common import ROOT, die, read_json, write_json
 
 
 def main():
@@ -38,19 +37,19 @@ def main():
         die(f"Error: no manifest at {manifest}.\n"
             f"       Create it first: python3 scripts/register_plugin.py {args.name} \"<description>\"", 2)
 
-    data = json.loads(manifest.read_text())
+    data = read_json(manifest)
     current = str(data.get("version", ""))
     if not re.match(r"^\d+\.\d+\.\d+$", current):
         die(f'Error: current version "{current}" is not a MAJOR.MINOR.PATCH semver.', 1)
 
-    maj, minor, patch = (int(x) for x in current.split("."))
+    major, minor, patch = (int(x) for x in current.split("."))
     if args.part == "major":
-        maj, minor, patch = maj + 1, 0, 0
+        major, minor, patch = major + 1, 0, 0
     elif args.part == "minor":
         minor, patch = minor + 1, 0
     else:
         patch += 1
-    new = f"{maj}.{minor}.{patch}"
+    new = f"{major}.{minor}.{patch}"
 
     data["version"] = new
     write_json(manifest, data)

@@ -15,6 +15,14 @@ def die(msg, code) -> NoReturn:
     sys.exit(code)
 
 
+def read_json(path):
+    """Parse JSON at path, or die(1) with a clean message if it is malformed."""
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        die(f"Error: {path} is not valid JSON: {e}", 1)
+
+
 def write_json(path, obj):
     # indent=2 + ensure_ascii=False + trailing newline matches jq's output.
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n")

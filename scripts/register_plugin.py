@@ -22,9 +22,8 @@ Exit codes: 0 = success, 1 = errors, 2 = usage error / missing skill.
 from __future__ import annotations
 
 import argparse
-import json
 
-from _common import ROOT, die, write_json
+from _common import ROOT, die, read_json, write_json
 
 # Repo-wide manifest constants.
 AUTHOR_NAME = "James Maggs"
@@ -33,6 +32,10 @@ REPOSITORY = "https://github.com/jamesmaggs/skills"
 DEFAULT_VERSION = "0.1.0"
 
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
+
+
+def by_name(plugin):
+    return plugin.get("name", "")
 
 
 def main():
@@ -49,9 +52,9 @@ def main():
         die(f"Error: marketplace file not found: {MARKETPLACE}", 1)
 
     if args.remove:
-        data = json.loads(MARKETPLACE.read_text())
+        data = read_json(MARKETPLACE)
         before = data.get("plugins", [])
-        kept = sorted((p for p in before if p.get("name") != name), key=lambda p: p["name"])
+        kept = sorted((p for p in before if p.get("name") != name), key=by_name)
         data["plugins"] = kept
         write_json(MARKETPLACE, data)
         print(f"Unregistered '{name}' from {MARKETPLACE}" if len(kept) != len(before)
@@ -65,7 +68,7 @@ def main():
         die(f"Error: no skill at skills/{name} (expected skills/{name}/SKILL.md).", 2)
 
     # Read the existing manifest once (if any); reused for description + version.
-    existing = json.loads(manifest.read_text()) if manifest.exists() else None
+    existing = read_json(manifest) if manifest.exists() else None
 
     # Resolve the description: explicit argument wins; otherwise reuse the manifest's.
     if args.description is not None:
@@ -92,10 +95,10 @@ def main():
     })
 
     # Upsert the marketplace entry, then sort all entries by name.
-    data = json.loads(MARKETPLACE.read_text())
+    data = read_json(MARKETPLACE)
     plugins = [p for p in data.get("plugins", []) if p.get("name") != name]
     plugins.append({"name": name, "source": f"./skills/{name}", "description": desc})
-    data["plugins"] = sorted(plugins, key=lambda p: p["name"])
+    data["plugins"] = sorted(plugins, key=by_name)
     write_json(MARKETPLACE, data)
 
     print(f"Registered '{name}' -> {manifest} and {MARKETPLACE}")
