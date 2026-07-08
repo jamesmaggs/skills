@@ -4,8 +4,8 @@
 Checks a SKILL.md (and its directory) against the mechanically-verifiable rules
 in Anthropic's Agent Skills spec and best-practices checklist: frontmatter
 limits, body length, reference nesting, path style, and a few high-signal
-heuristics. It does NOT judge writing quality or effectiveness -- that is
-skill-evaluator's job.
+heuristics. It does NOT judge writing quality or effectiveness -- those take
+human judgement, not this tool.
 
 Usage:  lint_skill.py <path-to-skill-dir-or-SKILL.md> [--json]
 Exit:   0 = no errors (warnings allowed), 1 = errors found, 2 = unreadable.
