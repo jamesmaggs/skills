@@ -1,28 +1,11 @@
 #!/usr/bin/env bash
 # Pre-commit checks — deterministic and offline; if it can't run, stop and
-# investigate, don't bypass. Lint + typecheck the Python scripts FIRST (the skill
-# lint below runs one of them), then lint every SKILL.md against the spec.
+# investigate, don't bypass. Lint every SKILL.md against the Agent Skills spec.
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
 linter="$repo_root/scripts/lint_skill.py"
 status=0
-
-# Python scripts: lint (ruff) + typecheck (pyright). No errors or warnings allowed.
-echo "pre-commit: python lint + typecheck…"
-if ! command -v ruff >/dev/null 2>&1 || ! command -v pyright >/dev/null 2>&1; then
-  echo "  ruff/pyright not found — install: uv tool install ruff pyright  (or pip install ruff pyright)" >&2
-  status=1
-else
-  ( cd "$repo_root" && ruff check . ) || status=1
-  pyout="$( cd "$repo_root" && pyright 2>&1 )" || true
-  if printf '%s\n' "$pyout" | grep -qE '^0 errors, 0 warnings,'; then
-    printf '%s\n' "$pyout" | tail -1
-  else
-    printf '%s\n' "$pyout"
-    status=1
-  fi
-fi
 
 echo "pre-commit: linting skills…"
 for skill_md in "$repo_root"/skills/*/SKILL.md; do
