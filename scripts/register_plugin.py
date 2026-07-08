@@ -8,10 +8,14 @@ and the marketplace entries are always sorted by name.
 
 Usage:
   python3 scripts/register_plugin.py <skill-name> ["<description>"]
+  python3 scripts/register_plugin.py <skill-name> --remove   # drop the entry
 
 The description is the short, human-facing summary shown in the marketplace
 (distinct from the model-facing SKILL.md description). If omitted, the current
 plugin.json's description is reused, so the command doubles as a re-sync.
+
+`--remove` deletes the skill's marketplace entry (for when a skill is deleted);
+it touches no files under skills/ and is idempotent.
 
 Exit codes: 0 = success, 1 = errors, 2 = usage error / missing skill.
 """
@@ -35,16 +39,30 @@ def main():
     ap = argparse.ArgumentParser(description="Wire a skill into the plugin marketplace.")
     ap.add_argument("name", help="skill name (directory under skills/)")
     ap.add_argument("description", nargs="?", help="short marketplace summary (reused from the manifest if omitted)")
+    ap.add_argument("--remove", action="store_true",
+                    help="remove the skill's marketplace entry (use when deleting a skill; touches no files)")
     args = ap.parse_args()
 
     name = args.name
+
+    if not MARKETPLACE.exists():
+        die(f"Error: marketplace file not found: {MARKETPLACE}", 1)
+
+    if args.remove:
+        data = json.loads(MARKETPLACE.read_text())
+        before = data.get("plugins", [])
+        kept = sorted((p for p in before if p.get("name") != name), key=lambda p: p["name"])
+        data["plugins"] = kept
+        write_json(MARKETPLACE, data)
+        print(f"Unregistered '{name}' from {MARKETPLACE}" if len(kept) != len(before)
+              else f"'{name}' was not in {MARKETPLACE} (nothing to remove)")
+        return
+
     skill_dir = ROOT / "skills" / name
     manifest = skill_dir / ".claude-plugin" / "plugin.json"
 
     if not (skill_dir / "SKILL.md").exists():
         die(f"Error: no skill at skills/{name} (expected skills/{name}/SKILL.md).", 2)
-    if not MARKETPLACE.exists():
-        die(f"Error: marketplace file not found: {MARKETPLACE}", 1)
 
     # Read the existing manifest once (if any); reused for description + version.
     existing = json.loads(manifest.read_text()) if manifest.exists() else None
