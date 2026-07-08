@@ -1,7 +1,0 @@
-id,should_trigger,prompt
-commit-explicit,true,"Commit my changes."
-commit-stage,true,"Stage what I changed and record it in git."
-commit-save,true,"Save my work to git with a good message."
-explain-rebase,false,"Explain how git rebase works."
-show-diff,false,"Show me the diff of my last commit."
-stash-question,false,"What does git stash do?"

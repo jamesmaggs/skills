@@ -1,8 +1,0 @@
-id,should_trigger,prompt
-record-explicit,true,"Write an ADR recording our decision to adopt event sourcing for the orders service."
-record-implicit,true,"We've decided to store sessions in Redis instead of Postgres after weighing the trade-offs — let's record that decision."
-supersede,true,"We've switched the public API from REST to GraphQL; supersede the old ADR that recorded the REST decision."
-status-change,true,"Mark ADR 0007 as accepted now that the team has signed off."
-explain-adr,false,"Explain what an Architecture Decision Record is and when teams should use them."
-make-decision,false,"Which database should we pick for the new service — Postgres or DynamoDB?"
-readme-docs,false,"Write a README documenting how to run the test suite."
