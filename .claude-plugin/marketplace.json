@@ -6,11 +6,6 @@
   },
   "plugins": [
     {
-      "name": "blindspots",
-      "source": "./skills/blindspots",
-      "description": "Predict how a task is most likely to go wrong before starting it, and the fix for each."
-    },
-    {
       "name": "brand-voice",
       "source": "./skills/brand-voice",
       "description": "Establish a brand's voice and tone through a structured interview, output as a fixed-schema guide."
@@ -19,6 +14,11 @@
       "name": "commit",
       "source": "./skills/commit",
       "description": "Stage and commit changes using Conventional Commits."
+    },
+    {
+      "name": "premortem",
+      "source": "./skills/premortem",
+      "description": "Run a premortem on a task before starting: assume it failed, surface why, and fix the gaps first."
     },
     {
       "name": "six-thinking-hats",
