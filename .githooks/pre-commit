@@ -5,7 +5,7 @@
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
-linter="$repo_root/skills/skill-linter/scripts/lint_skill.py"
+linter="$repo_root/scripts/lint_skill.py"
 status=0
 
 # Python scripts: lint (ruff) + typecheck (pyright). No errors or warnings allowed.
@@ -25,7 +25,6 @@ else
 fi
 
 echo "pre-commit: linting skills…"
-# Top-level skills only — evals/files/* hold intentionally malformed fixtures.
 for skill_md in "$repo_root"/skills/*/SKILL.md; do
   [ -e "$skill_md" ] || continue
   python3 "$linter" "$skill_md" || status=1

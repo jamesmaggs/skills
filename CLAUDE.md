@@ -41,14 +41,13 @@ skills/<skill>/
 
 ## Skill linting
 
-The `skill-linter` skill's `skills/skill-linter/scripts/lint_skill.py` checks a
-`SKILL.md` against the Agent Skills spec (frontmatter, naming, length limits,
-references, and best-practice heuristics). A pre-commit hook runs it on every
-top-level skill — enable it once per clone:
+`scripts/lint_skill.py` checks a `SKILL.md` against the Agent Skills spec
+(frontmatter, naming, length limits, references, and best-practice heuristics). A
+pre-commit hook runs it on every top-level skill — enable it once per clone:
 
 ```sh
 git config core.hooksPath .githooks
 ```
 
-Run it manually on a single skill: `python3 skills/skill-linter/scripts/lint_skill.py
-<skill-dir> [--json]`.
+Run it manually on a single skill: `python3 scripts/lint_skill.py <skill-dir>
+[--json]`.
