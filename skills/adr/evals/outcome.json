@@ -1,0 +1,30 @@
+[
+  {
+    "id": "decline-trivial-decision",
+    "prompt": "We named our new logging module `logger.ts` and put it in `src/util/`. Write an ADR to record that decision.",
+    "checks": [
+      { "type": "rubric", "criterion": "The response declines to create an ADR, judging this naming/placement choice too trivial, obvious, or easily reversed to warrant one (no real trade-off), or asks whether it genuinely needs recording — rather than writing an ADR file." }
+    ]
+  },
+  {
+    "id": "write-new-adr-madr-structure",
+    "prompt": "Record an ADR titled 'Use Redis for session storage'. Context: session reads dominate our traffic and we need per-session TTLs, and it is hard to unpick once live traffic depends on it. Options considered: keep sessions in Postgres alongside everything else, or move them to Redis. Decision: use Redis, for its speed and native TTL support. Consequences: another datastore to operate, but far faster lookups and automatic expiry. Create it under docs/adr/.",
+    "checks": [
+      { "type": "file_exists",   "path": "docs/adr/0001-use-redis-for-session-storage.md" },
+      { "type": "file_contains", "path": "docs/adr/0001-use-redis-for-session-storage.md", "pattern": "## Context and drivers" },
+      { "type": "file_contains", "path": "docs/adr/0001-use-redis-for-session-storage.md", "pattern": "## Considered options" },
+      { "type": "file_exists",   "path": "docs/adr/README.md" }
+    ]
+  },
+  {
+    "id": "supersede-existing-adr",
+    "prompt": "We're replacing REST with GraphQL for the public API. It is a real trade-off — REST is simpler and cacheable, GraphQL gives clients flexible queries — and hard to reverse once integrators depend on it. Supersede the existing REST ADR with a new one titled 'Adopt GraphQL for the public API'. Context: integrators need to fetch nested resources in one request. Options: keep REST, or move to GraphQL. Decision: adopt GraphQL. Consequences: more flexible queries for clients, but new server complexity and caching work.",
+    "fixture": "files/rest-api-adr",
+    "checks": [
+      { "type": "file_contains", "path": "docs/adr/0001-use-rest-for-the-public-api.md", "pattern": "Superseded-by-0002" },
+      { "type": "file_exists",   "path": "docs/adr/0002-adopt-graphql-for-the-public-api.md" },
+      { "type": "file_contains", "path": "docs/adr/0002-adopt-graphql-for-the-public-api.md", "pattern": "0001" },
+      { "type": "file_contains", "path": "docs/adr/README.md", "pattern": "0002" }
+    ]
+  }
+]
