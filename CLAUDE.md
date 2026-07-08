@@ -8,8 +8,8 @@ spec so it stays agent-agnostic. Skills live under `skills/<skill>/`:
 
 ```
 skills/<skill>/
-├── SKILL.md          # the skill: frontmatter (name, description) + instructions
-└── evals/            # scenario evals (task.md, criteria.json, scenario.json, inputs/)
+├── SKILL.md          # frontmatter (name, description) + instructions
+└── references/, scripts/, assets/   # optional bundled files, when a skill needs them
 ```
 
 ## Conventions
