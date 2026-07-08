@@ -40,3 +40,30 @@ python3 scripts/eval/run_evals.py --skill <skill-dir> [--model haiku|sonnet] [--
 `run_evals.py` runs each triggering row with the skill available (does it fire?) and each
 outcome case twice — with the skill's guidance injected, and at baseline — appending one
 line per run to `<skill-dir>/evals/results/history.jsonl`. Use `--dry-run` first.
+
+## Limitations — what this harness can't measure
+
+This harness measures skills whose value is **inline, single-call behaviour on a
+discriminating task** — it runs one `claude -p` per config in the sandbox and grades the
+result. Skills whose value lies elsewhere don't get an honest `value_delta` here, and
+should not carry an eval spec that fakes one. The classes we've hit, with the skills that
+fall in each:
+
+- **Deterministic tools** (`skill-linter`) — the skill's worth is a bundled script whose
+  checks a capable baseline reproduces by direct measurement. The only "lift" is a
+  ran-our-tool artifact (a presence-not-correctness trap), not a real outcome gap. Its
+  correctness belongs in script-level tests. *(This one is harness-agnostic — a
+  deterministic tool resists value-delta in any harness.)*
+- **Multi-agent orchestrators** (`six-thinking-hats`) — the skill delegates to parallel
+  sub-agents, whose output is not captured in the single main-agent trace the grader reads,
+  so the with-skill run looks truncated/incomplete.
+- **Bundled-asset / interactive skills** (`brand-voice`, partly) — the sandbox ships only
+  `SKILL.md` text, not the skill's `references/`, `scripts/`, or `assets/`, and there is no
+  back-and-forth. `brand-voice` is evaluable only by front-loading the whole brief and
+  testing the "produce a structured, persisted guide" slice, not its real value (the
+  interview).
+- **The evaluator itself** (`skill-evaluator`) — self-referential, and it combines the two
+  failure modes above: its run flow needs sub-agents (uncaptured), and its author flow needs
+  the bundled `references/eval-spec.md` (absent in the sandbox).
+
+Skills currently with a measured spec: `adr`, `blindspots`, `brand-voice`, `commit`.
