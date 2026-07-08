@@ -17,7 +17,7 @@ This repo is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/
 Add it, then install any skill from the table above by name:
 
 ```sh
-/plugin marketplace add jamesmaggs/software-factory
+/plugin marketplace add jamesmaggs/skills
 /plugin install <skill>@jamesmaggs   # e.g. commit@jamesmaggs
 ```
 

@@ -29,7 +29,7 @@ from _common import ROOT, die, write_json
 # Repo-wide manifest constants.
 AUTHOR_NAME = "James Maggs"
 LICENSE = "MIT"
-REPOSITORY = "https://github.com/jamesmaggs/software-factory"
+REPOSITORY = "https://github.com/jamesmaggs/skills"
 DEFAULT_VERSION = "0.1.0"
 
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
