@@ -11,8 +11,8 @@ Usage:
   python3 run_evals.py --skill <dir> [--model haiku|sonnet] [--runs-per-trigger 3]
                        [--no-rubric] [--dry-run] [--json] [--keep-workdirs]
 
-Model policy: default haiku (cheapest, where skills add the most value);
-sonnet is the ceiling; opus (and anything else) is rejected.
+Model policy: default sonnet (a reliable middle ground for triggering and
+value); haiku is allowed (cheaper, but under-triggers); opus is rejected.
 """
 from __future__ import annotations
 
@@ -260,7 +260,7 @@ def eval_outcome(skill_dir, cases, model, rubric_fn, timeout, workbase, skill_na
 def main():
     ap = argparse.ArgumentParser(description="Run a skill's evals and score them.")
     ap.add_argument("--skill", required=True, help="Path to the skill directory")
-    ap.add_argument("--model", default="haiku", help="haiku (default) or sonnet")
+    ap.add_argument("--model", default="sonnet", help="sonnet (default) or haiku")
     ap.add_argument("--runs-per-trigger", type=int, default=3)
     ap.add_argument("--trigger-threshold", type=float, default=0.5)
     ap.add_argument("--trigger-timeout", type=int, default=120)

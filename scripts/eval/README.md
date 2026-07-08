@@ -16,8 +16,8 @@ Being non-portable is fine here — it is repo infrastructure, not a shipped ski
   These runs bill against **API credits**, which a Claude subscription does not include.
 - The **rubric grader** runs on the host and uses your **subscription** by default; pass
   `--grader-auth apikey` in CI where no subscription exists.
-- **Model policy:** default **haiku** (cheapest, where a skill adds the most value); **sonnet**
-  is the ceiling; **opus is rejected**.
+- **Model policy:** default **sonnet** (a reliable middle ground for triggering and value);
+  **haiku** is allowed (cheaper, but under-triggers); **opus is rejected**.
 
 ## Trust boundary
 
