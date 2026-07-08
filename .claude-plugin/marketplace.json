@@ -6,11 +6,6 @@
   },
   "plugins": [
     {
-      "name": "adr",
-      "source": "./skills/adr",
-      "description": "Author Architecture Decision Records (ADRs) in the MADR format."
-    },
-    {
       "name": "blindspots",
       "source": "./skills/blindspots",
       "description": "Predict how a task is most likely to go wrong before starting it, and the fix for each."
