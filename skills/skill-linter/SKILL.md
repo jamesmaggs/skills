@@ -8,8 +8,8 @@ disable-model-invocation: true
 
 Mechanically check a skill against the parts of the Agent Skills spec that can be
 decided without judgement. This is a linter, not a critic: it tells you whether a
-skill is *well-formed*, not whether it is *good* or *effective*. For those, use
-`skill-evaluator`.
+skill is *well-formed*, not whether it is *good* or *effective* — those take human
+judgement, not this tool.
 
 ## How to run
 
@@ -54,9 +54,9 @@ rather than forcing a change that makes the skill worse.
 
 It does not assess calibration (is the body lean, or padded with things the model
 already knows?), description triggering quality, or whether the skill beats a
-no-skill baseline on real tasks. Those are judgement and measurement, which is
-`skill-evaluator`'s job. Run this first for a clean bill of form, then reach for
-`skill-evaluator` for substance.
+no-skill baseline on real tasks. Those are matters of judgement and real-task
+performance — out of scope for a mechanical linter. A clean bill here means the
+skill is well-formed, not that it is good.
 
 Checks are grounded in Anthropic's Agent Skills best-practices and spec
 (`platform.claude.com/docs/en/agents-and-tools/agent-skills`).

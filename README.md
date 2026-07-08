@@ -11,7 +11,6 @@ A personal collection of harness-engineering skills for [Claude Code](https://cl
 | [brand-voice](./skills/brand-voice/SKILL.md) | Interview to establish a brand's voice, scored on the [four tone-of-voice dimensions](https://www.nngroup.com/articles/tone-of-voice-dimensions/) |
 | [commit](./skills/commit/SKILL.md) | Stage and commit changes using [Conventional Commits](https://www.conventionalcommits.org) |
 | [six-thinking-hats](./skills/six-thinking-hats/SKILL.md) | Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats) |
-| [skill-evaluator](./skills/skill-evaluator/SKILL.md) | Measure a skill's real value against a no-skill baseline, and author eval specs |
 | [skill-linter](./skills/skill-linter/SKILL.md) | Deterministically lint a SKILL.md against the [Agent Skills](https://agentskills.io/specification) spec |
 
 ## Install

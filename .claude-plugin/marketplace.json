@@ -31,11 +31,6 @@
       "description": "Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats)."
     },
     {
-      "name": "skill-evaluator",
-      "source": "./skills/skill-evaluator",
-      "description": "Measure a skill's real value against a no-skill baseline, and author eval specs."
-    },
-    {
       "name": "skill-linter",
       "source": "./skills/skill-linter",
       "description": "Deterministically lint a SKILL.md against the Agent Skills spec."
