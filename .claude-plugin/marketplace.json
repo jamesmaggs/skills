@@ -29,11 +29,6 @@
       "name": "six-thinking-hats",
       "source": "./skills/six-thinking-hats",
       "description": "Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats)."
-    },
-    {
-      "name": "skill-linter",
-      "source": "./skills/skill-linter",
-      "description": "Deterministically lint a SKILL.md against the Agent Skills spec."
     }
   ]
 }
