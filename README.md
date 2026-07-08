@@ -18,7 +18,7 @@ Add it, then install any skill from the table above by name:
 
 ```sh
 /plugin marketplace add jamesmaggs/software-factory
-/plugin install <skill>@software-factory   # e.g. commit@software-factory
+/plugin install <skill>@jamesmaggs   # e.g. commit@jamesmaggs
 ```
 
 ## License
