@@ -14,48 +14,88 @@ Stdlib only -- no network.
 """
 from __future__ import annotations
 
-import os
+import argparse
+import json
 import re
 import sys
+from collections import namedtuple
+from pathlib import Path
 from typing import NoReturn
 
 GENERIC_RE = re.compile(r"^(utils?|helpers?|tools?|doc[0-9]*|file[0-9]+|untitled|temp|misc)\.md$", re.I)
 
+Check = namedtuple("Check", "id severity passed message")
+
+
+def unquote(s):
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+        return s[1:-1]
+    return s
+
+
+def resolve(base, link):
+    """Resolve link against base to a canonical <realpath-of-dir>/<basename>.
+
+    Returns None when the link's directory does not exist (mirrors the old
+    empty-string sentinel, which never matched a real file).
+    """
+    link = Path(link)
+    d = link.parent if link.is_absolute() else Path(base) / link.parent
+    if not d.is_dir():
+        return None
+    return d.resolve() / link.name
+
+
+def md_links(content):
+    links = []
+    for m in re.finditer(r"\]\(([^)]+)\)", content):
+        t = m.group(1).split("#", 1)[0]
+        if not t or "://" in t or t.startswith("mailto:") or not t.endswith(".md"):
+            continue
+        links.append(t)
+    return links
+
+
+def extract_md_links(path):
+    try:
+        with open(path, errors="replace") as f:
+            content = f.read()
+    except OSError:
+        return []
+    return md_links(content)
+
 
 def main():
-    json_out = False
-    target = ""
-    for arg in sys.argv[1:]:
-        if arg == "--json":
-            json_out = True
-        else:
-            target = arg
+    ap = argparse.ArgumentParser(description="Deterministic linter for Agent Skills.")
+    ap.add_argument("target", help="path to a skill directory or a SKILL.md")
+    ap.add_argument("--json", dest="json_out", action="store_true", help="emit JSON instead of text")
+    args = ap.parse_args()
 
-    if not target:
-        print("usage: lint_skill.py <path-to-skill-dir-or-SKILL.md> [--json]", file=sys.stderr)
-        sys.exit(2)
-    if not os.path.exists(target):
+    json_out = args.json_out
+    target = Path(args.target)
+
+    if not target.exists():
         print(f"Path not found: {target}", file=sys.stderr)
         sys.exit(2)
 
-    if os.path.isdir(target):
+    if target.is_dir():
         skill_dir = target
-        skill_md = os.path.join(target, "SKILL.md")
+        skill_md = target / "SKILL.md"
     else:
         skill_md = target
-        skill_dir = os.path.dirname(target) or "."
-    skill_name = os.path.basename(os.path.normpath(skill_dir))
+        skill_dir = skill_md.parent
+    skill_name = skill_dir.resolve().name
 
-    checks = []  # (id, severity, passed, message)
+    checks = []  # Check(id, severity, passed, message)
 
     def ok(cid, msg=""):
-        checks.append((cid, "error", True, msg))
+        checks.append(Check(cid, "error", True, msg))
 
     def err(cid, msg):
-        checks.append((cid, "error", False, msg))
+        checks.append(Check(cid, "error", False, msg))
 
     def warn(cid, msg):
-        checks.append((cid, "warning", False, msg))
+        checks.append(Check(cid, "warning", False, msg))
 
     def check(cid, passed, fail_msg="", *, warn_only=False):
         if passed:
@@ -66,9 +106,9 @@ def main():
             err(cid, fail_msg)
 
     def emit_and_exit() -> NoReturn:
-        errors = sum(1 for _, s, p, _ in checks if not p and s == "error")
-        warns = sum(1 for _, s, p, _ in checks if not p and s == "warning")
-        passed = sum(1 for _, _, p, _ in checks if p)
+        errors = sum(1 for c in checks if not c.passed and c.severity == "error")
+        warns = sum(1 for c in checks if not c.passed and c.severity == "warning")
+        passed = sum(1 for c in checks if c.passed)
         total = len(checks)
         verdict = "clean"
         if errors + warns > 0:
@@ -77,62 +117,31 @@ def main():
             verdict = "fail"
 
         if json_out:
-            def esc(s):
-                return s.replace("\\", "\\\\").replace('"', '\\"')
-            out = ['{', f'  "skill": "{esc(skill_name)}",', '  "checks": [']
-            for i, (cid, sev, p, msg) in enumerate(checks):
+            out = ["{", f'  "skill": {json.dumps(skill_name)},', '  "checks": [']
+            for i, c in enumerate(checks):
                 sep = "" if i == total - 1 else ","
-                pj = "true" if p else "false"
-                out.append(f'    {{"id": "{esc(cid)}", "severity": "{sev}", "passed": {pj}, "message": "{esc(msg)}"}}{sep}')
-            out.append('  ],')
-            out.append(f'  "summary": {{"errors": {errors}, "warnings": {warns}, "passed": {passed}, "total": {total}}},')
-            out.append(f'  "verdict": "{verdict}"')
-            out.append('}')
+                obj = json.dumps({"id": c.id, "severity": c.severity, "passed": c.passed, "message": c.message})
+                out.append(f"    {obj}{sep}")
+            out.append("  ],")
+            out.append(f'  "summary": {json.dumps({"errors": errors, "warnings": warns, "passed": passed, "total": total})},')
+            out.append(f'  "verdict": {json.dumps(verdict)}')
+            out.append("}")
             print("\n".join(out))
         else:
             print(f"Linting skill: {skill_name}")
             print("===============================")
-            for cid, sev, p, msg in checks:
-                tag = "ok  " if p else ("FAIL" if sev == "error" else "warn")
-                if msg:
-                    print(f"  [{tag}] {cid}: {msg}")
+            for c in checks:
+                tag = "ok  " if c.passed else ("FAIL" if c.severity == "error" else "warn")
+                if c.message:
+                    print(f"  [{tag}] {c.id}: {c.message}")
                 else:
-                    print(f"  [{tag}] {cid}")
+                    print(f"  [{tag}] {c.id}")
             print("")
             print(f"Verdict: {verdict.upper()}  ({errors} errors, {warns} warnings, {passed}/{total} checks passed)")
         sys.exit(1 if errors > 0 else 0)
 
-    def unquote(s):
-        if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
-            return s[1:-1]
-        return s
-
-    def resolve(base, p):
-        d = os.path.dirname(p) if p.startswith("/") else os.path.join(base, os.path.dirname(p))
-        b = os.path.basename(p)
-        if not os.path.isdir(d):
-            return ""
-        return os.path.realpath(d) + "/" + b
-
-    def md_links(content):
-        links = []
-        for m in re.finditer(r"\]\(([^)]+)\)", content):
-            t = m.group(1).split("#", 1)[0]
-            if not t or "://" in t or t.startswith("mailto:") or not t.endswith(".md"):
-                continue
-            links.append(t)
-        return links
-
-    def extract_md_links(path):
-        try:
-            with open(path, errors="replace") as f:
-                content = f.read()
-        except OSError:
-            return []
-        return md_links(content)
-
     # ---- read file ----
-    if not os.path.isfile(skill_md):
+    if not skill_md.is_file():
         err("skill-md-exists", f"No SKILL.md found at {skill_md}")
         emit_and_exit()
 
@@ -249,15 +258,13 @@ def main():
     # ---- references: existence, one-level-deep, TOC ----
     body_link_list = md_links(body + "\n")
 
-    skill_md_resolved = resolve(skill_dir, os.path.basename(skill_md))
-    body_refs = ""
-    for link in body_link_list:
-        body_refs += "\n" + resolve(skill_dir, link)
+    skill_md_resolved = resolve(skill_dir, skill_md.name)
+    body_refs = {resolve(skill_dir, link) for link in body_link_list}
 
     missing, nested = "", ""
     for link in body_link_list:
         rp = resolve(skill_dir, link)
-        if not os.path.isfile(rp):
+        if rp is None or not rp.is_file():
             missing += " " + link
             continue
         with open(rp, errors="replace") as f:
@@ -268,8 +275,8 @@ def main():
             if not any("contents" in h.lower() for h in head):
                 warn("ref-toc", f"Reference '{link}' is {rlines} lines but has no table of contents near the top. Long reference files should list their contents.")
         for nlink in extract_md_links(rp):
-            nrp = resolve(os.path.dirname(rp), nlink)
-            if nrp == skill_md_resolved:
+            nrp = resolve(rp.parent, nlink)
+            if nrp is None or nrp == skill_md_resolved:
                 continue
             if nrp not in body_refs:
                 nested += f" {link}->{nlink}"
@@ -282,10 +289,9 @@ def main():
 
     # ---- generic file names ----
     generic = ""
-    for dirpath, _, filenames in os.walk(skill_dir):
-        for fn in filenames:
-            if fn.endswith(".md") and GENERIC_RE.match(fn):
-                generic += fn + " "
+    for p in sorted(skill_dir.rglob("*.md"), key=lambda p: str(p)):
+        if GENERIC_RE.match(p.name):
+            generic += p.name + " "
     check("file-names", not generic,
           f"Generic/uninformative file names found: {generic}. Name files by content so Claude can navigate by name.",
           warn_only=True)
