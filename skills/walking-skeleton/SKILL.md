@@ -12,8 +12,7 @@ deployment**. The goal is to prove the *process* — build, IaC provisioning, de
 end-to-end test that runs against the deployed system — not to ship a valuable feature. Keep the
 functionality obvious and uninteresting; all the effort goes into the infrastructure.
 
-Read `references/method.md` before planning. Consult `references/deploy-targets.md` when choosing
-tooling for a confirmed deploy target.
+Read `references/method.md` before planning.
 
 **Standing invariant (every step):** never read, echo, store, or commit a secret value. Secrets are
 placed by the *user* into the platform's own secret store; config and IaC reference them by name
@@ -85,17 +84,10 @@ inside the tested loop from step one). Pick the most boring slice that still exe
 iterate on the slice and the test before anything is built.
 
 Structure the plan as **baby steps outward from the failing e2e test**, each individually runnable
-and verifiable so a failure has an obvious first place to look:
-
-1. The failing end-to-end test that drives the deployed system.
-2. Build automation (one command produces a deployable artifact).
-3. IaC for the production-like environment.
-4. The major components, wired together, doing the trivial slice.
-5. CI that runs build → deploy → the e2e test.
-6. Deploy, so the test finally passes through the deployed system.
+and verifiable so a failure has an obvious first place to look — the sequence in the template below.
 
 Present the plan for approval in **plan mode**. On approval, write it to `docs/WALKING-SKELETON.md`
-as a checklist using the template below.
+using the template below.
 
 ### `docs/WALKING-SKELETON.md` template
 
