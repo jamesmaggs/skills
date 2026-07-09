@@ -1,0 +1,44 @@
+{
+  "skill_name": "six-thinking-hats",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run the six thinking hats on this: we're thinking of dropping our free tier entirely and going paid-only from day one for our note-taking app. Right now we have ~40k free users and about 3% convert to paid.",
+      "expected_output": "A blue-hat synthesis presented first, then six clearly-labelled hats each staying in its own mode, ending in a decisive read.",
+      "note": "Running this skill spawns six sub-agents, so an eval run needs subagent capability and is comparatively expensive.",
+      "expectations": [
+        "The blue-hat synthesis is presented first as the headline, with the five other hats' detail beneath it.",
+        "All six hats are present and clearly labelled (White, Red, Yellow, Black, Green, Blue).",
+        "The White hat separates checked facts from believed/unchecked facts and names what information is missing.",
+        "The Red hat gives gut/emotional reactions with no justifications (no 'because' or logical reasoning).",
+        "The Black hat raises logical, specific risks (not mere dislike) and the Yellow hat gives reasoned benefits (not vague cheerleading) (judgement).",
+        "The Green hat proposes concrete alternatives or ways over/around the difficulties the Black hat raised (judgement).",
+        "The Blue synthesis reaches a clear verdict (go / no-go / go-with-conditions / needs-more-info) and names the real trade-off instead of averaging the hats into mush (judgement).",
+        "Each hat reads as a single clean mode — a reader could identify which hat wrote a section without its label (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "six thinking hats: should we break our Rails monolith into microservices this year? we're a team of 12 and the monolith is getting painful to deploy.",
+      "expected_output": "All six hats applied to one fixed framing of the microservices question, blue synthesis leading, decisive close.",
+      "expectations": [
+        "The facilitator frames the idea once and all six hats evaluate that same fixed framing (no drift between hats).",
+        "All six hats are present, labelled, and each stays in its single mode (judgement).",
+        "The White hat flags what's unknown (e.g. team capacity, current deploy metrics) rather than asserting it.",
+        "The Black hat's concerns are logical and specific to a 12-person team splitting a Rails monolith, and the Green hat answers at least one of them (judgement).",
+        "The Blue synthesis gives a clear go / no-go / conditional verdict with the central trade-off named (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can you six-hats whether our team should switch to a four-day work week?",
+      "expected_output": "A balanced six-hat review of the four-day-week decision, blue synthesis first, hats kept pure, decisive conclusion.",
+      "expectations": [
+        "All six hats present and clearly labelled, with the blue synthesis presented first.",
+        "The Red hat expresses feelings about the four-day week without justifying them; the White hat cites what would need measuring (output, coverage) as unknowns (judgement).",
+        "Contradictory points between hats (e.g. Yellow's morale upside vs Black's coverage risk) are laid side by side, not argued into one voice (judgement).",
+        "The Blue synthesis reaches a clear, honest verdict and names concrete next steps (judgement)."
+      ]
+    }
+  ]
+}

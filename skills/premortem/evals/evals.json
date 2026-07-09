@@ -1,0 +1,39 @@
+{
+  "skill_name": "premortem",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Before we touch anything, run a premortem: over the weekend you're going to migrate our production Postgres 12 RDS instance (~400GB) up to Postgres 16, and we can only tolerate about 20 minutes of downtime.",
+      "expected_output": "Five past-tense failure reasons specific to this migration, each paired with a one-sentence paste-ready preventing instruction, then a full stop — the migration is not started.",
+      "expectations": [
+        "Presents exactly five failure reasons.",
+        "Each failure is phrased as something that already happened (past tense, e.g. 'it failed because...'), not a hypothetical ('it might...').",
+        "Each of the five failures is paired with exactly one paste-ready preventing instruction written as a single directive sentence.",
+        "The failures are concrete to this Postgres 12->16 / ~400GB / 20-minute-downtime migration (e.g. replication lag, extension incompatibility, downtime overrun), not generic project advice (judgement).",
+        "The five reasons span distinct angles (misread intent, unstated assumption, generic drift, genuinely-hard-for-a-model) rather than five restatements of one worry (judgement).",
+        "The skill stops after presenting the failures and fixes and does NOT begin the migration — no migration commands, runbook execution, or 'now I'll start by...'."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/premortem write the launch announcement for our new pricing",
+      "expected_output": "Five failures for a deliberately under-specified task; at least one names the ambiguity (audience, channel, tone, what actually changed). Fixes given, then it stops.",
+      "expectations": [
+        "Presents exactly five failure reasons, each in past tense with a single paste-ready fix.",
+        "At least one failure targets the ambiguity in this request — unclear audience, channel, length, or what the pricing change actually is — under a misread-intent or unstated-assumption angle (judgement).",
+        "Failures are specific to writing a pricing-launch announcement, not generic writing advice (judgement).",
+        "The skill does NOT draft the announcement — it stops and hands control back to the user."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Quick one — premortem then just fix the failing CI on main, it's blocking the whole team.",
+      "expected_output": "Even under time pressure and an explicit 'just fix it', the skill runs the premortem (five failures + fixes) and then stops, waiting for the user rather than starting the fix.",
+      "expectations": [
+        "Presents exactly five past-tense failure reasons, each with one paste-ready preventing instruction.",
+        "Failures are concrete to fixing failing CI on main (e.g. fixing a symptom not the cause, breaking other jobs, masking a real test failure), not generic (judgement).",
+        "Despite the 'just fix it' pressure, the skill STOPS after the premortem and does not begin diagnosing or fixing CI (no commands run toward the fix)."
+      ]
+    }
+  ]
+}

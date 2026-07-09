@@ -1,0 +1,50 @@
+{
+  "skill_name": "commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Commit my changes.",
+      "expected_output": "The two unrelated working-tree changes (a None-guard bug fix in src/parser.py and an unrelated wording tweak in README.md) are recorded as two separate atomic commits — a fix: and a docs: — each a well-formed Conventional Commits message with a Co-Authored-By trailer.",
+      "setup": "In an empty temp directory, run the fixture evals/files/setup_mixed.sh (it inits a git repo with one baseline commit, then makes two unrelated changes). Invoke the skill in that directory. Baseline commit count is 1.",
+      "files": ["evals/files/setup_mixed.sh"],
+      "expectations": [
+        "Creates exactly two new commits on top of the fixture baseline (HEAD is 3 commits deep).",
+        "src/parser.py and README.md land in separate commits, not one combined commit (check `git show --stat` per commit).",
+        "Every commit subject matches the Conventional Commits grammar `^(feat|fix|perf|docs|refactor|test|build|ci|chore|revert)(\\([^)]+\\))?!?: .+`.",
+        "The src/parser.py change uses type `fix` and the README.md change uses type `docs`.",
+        "Every subject line is <= 72 characters, is lowercase after the colon, and has no trailing period.",
+        "Every commit message contains a `Co-Authored-By: Claude` trailer.",
+        "Files are staged by name — the transcript shows no `git add .` or `git add -A`.",
+        "The two changes are genuinely unrelated, so splitting them rather than combining is the correct call (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can you commit this for me?",
+      "expected_output": "A single function rename (fetch_user -> get_user) that spans three files is recorded as ONE atomic commit, because the call-site updates are meaningless without the definition change. A refactor: message.",
+      "setup": "In an empty temp directory, run evals/files/setup_coupled.sh (inits a repo with one baseline commit, then renames fetch_user to get_user in src/users.py and both call sites). Invoke the skill there. Baseline commit count is 1.",
+      "files": ["evals/files/setup_coupled.sh"],
+      "expectations": [
+        "Creates exactly ONE new commit (HEAD is 2 commits deep) — the coupled rename is not split across multiple commits.",
+        "All three changed files (src/users.py, src/main.py, src/report.py) are in that single commit.",
+        "The commit subject matches the Conventional Commits grammar and uses type `refactor`.",
+        "The subject line is <= 72 characters, lowercase after the colon, no trailing period.",
+        "The commit message contains a `Co-Authored-By: Claude` trailer.",
+        "Keeping the rename together rather than splitting is correct because the call sites can't build without the definition change (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "commit my work",
+      "expected_output": "The working tree is clean, so the skill reports there is nothing to commit and stops — it does NOT create an empty commit.",
+      "setup": "In an empty temp directory, run evals/files/setup_clean.sh (inits a repo with one commit and a clean tree). Invoke the skill there. Baseline commit count is 1.",
+      "files": ["evals/files/setup_clean.sh"],
+      "expectations": [
+        "No new commit is created (HEAD stays 1 commit deep).",
+        "The skill explicitly tells the user there is nothing to commit.",
+        "No empty commit (e.g. `git commit --allow-empty`) is attempted (check the transcript).",
+        "The skill stops rather than inventing changes to commit (judgement)."
+      ]
+    }
+  ]
+}

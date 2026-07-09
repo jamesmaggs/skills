@@ -1,0 +1,38 @@
+{
+  "skill_name": "brand-voice",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I run a bootstrapped B2B SaaS called Lantern — incident-management software for on-call engineers. Our users are stressed SREs who open the app at 3am when something's on fire, and I want them to feel calm and in control, like a competent colleague has their back. Brands I admire: Linear (crisp, no fluff) and Stripe's docs (precise, respectful of your time). Absolute no: cutesy mascots or exclamation-point hype. Adjectives: composed, precise, quietly reassuring — never cold or robotic. We're serious over funny, lean casual (we use contractions), respectful not irreverent, matter-of-fact over enthusiastic. An error message we ship today that I hate: 'Something went wrong. Try again later.' Build me the brand voice guide.",
+      "expected_output": "A completed guide at docs/design/brand-voice-guide.md that passes the linter and reflects Lantern's stated positioning (serious, casual, respectful, matter-of-fact), grounded in what the founder said.",
+      "setup": "brand-voice is user-invoked and interactive. Run it in a scratch project directory. If running headless, supply a respondent persona (the Lantern founder above) to answer the skill's follow-up questions and the 37-word card sort consistently. Grade the final guide, not the interview.",
+      "expectations": [
+        "A file is written to docs/design/brand-voice-guide.md under the project root.",
+        "`python3 scripts/lint_voice_guide.py docs/design/brand-voice-guide.md` exits 0 (CLEAN).",
+        "The guide has the H1 '# Brand Voice Guide: <name>' and the sections 'The Voice', 'Tone of Voice Dimensions', 'Brand Voice Chart', and 'Sample Copy'.",
+        "All four dimensions are scored 1-5 with the number agreeing with the Position wording.",
+        "Funny<->Serious leans serious (4-5), Enthusiastic<->Matter-of-fact leans matter-of-fact (4-5), and Respectful<->Irreverent is respectful (1-2), matching the founder's positioning.",
+        "The Brand Voice Chart has 3-5 trait rows, each with non-empty Description, Do's, and Don'ts cells.",
+        "Sample Copy contains all four labelled samples (Error message, Marketing line, Support reply, Onboarding email opener), each as a blockquote.",
+        "No unfilled [placeholder] brackets remain.",
+        "Scores and do/don'ts are grounded in what the founder actually said (e.g. no exclamation-point hype, 'never cold or robotic'), not invented (judgement).",
+        "The guide states the voice only — no 'why this voice' rationale or derivation commentary (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're a DTC brand called Sudsy — eco-friendly dish soap on monthly subscription, aimed at millennials who find chores boring. I want the voice funny and a bit cheeky, irreverent about the *category* (dish soap is dull and we know it) but never mean to the customer. Think Oatly and Who Gives A Crap. Casual as anything, tons of personality — but people trust us with their card every month, so not totally unhinged. Absolute no: greenwashing buzzwords like 'eco-warrior' or 'synergy'. Make the voice guide.",
+      "expected_output": "A linter-passing guide at docs/design/brand-voice-guide.md sitting at the opposite tone poles from the Lantern case — funny, casual, irreverent-toward-subject — grounded in the founder's words.",
+      "setup": "Same as eval 1: user-invoked and interactive; supply the Sudsy persona to answer follow-ups and the card sort if running headless. Grade the final guide.",
+      "expectations": [
+        "A file is written to docs/design/brand-voice-guide.md and `python3 scripts/lint_voice_guide.py` on it exits 0.",
+        "All required sections and the four dimension rows are present, with scores agreeing with the Position wording.",
+        "Funny<->Serious leans funny (1-2) and Formal<->Casual leans casual (4-5), matching the brief.",
+        "Respectful<->Irreverent leans irreverent (4-5), and its Position/Rationale make clear the irreverence is toward the subject (dish soap), never the reader (judgement).",
+        "The Brand Voice Chart has 3-5 fully-filled trait rows and Sample Copy has all four blockquoted samples.",
+        "The never-say guidance reflects the stated bans (no 'eco-warrior'/'synergy'-style greenwashing) (judgement).",
+        "No unfilled placeholders remain, and there is no 'why this voice' commentary (judgement)."
+      ]
+    }
+  ]
+}
