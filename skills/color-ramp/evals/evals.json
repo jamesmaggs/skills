@@ -1,0 +1,83 @@
+{
+  "skill_name": "color-ramp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I've got two brand colours, #1e3a8a and #fbbf24. Build me a full 50-950 colour scale that runs through both, as CSS custom properties I can drop straight into our design system. Name them --brand-*.",
+      "expected_output": "The bundled script is run with an 11-step Tailwind-style ramp in CSS format named `brand`, emitting a `:root` block of `--brand-50 ... --brand-950` in which both input colours appear unmodified (--brand-400 is #1e3a8a, --brand-900 is #fbbf24).",
+      "setup": "color-ramp is model-invoked. Run it in a scratch directory. Grade the emitted CSS and the transcript of how it was produced.",
+      "expectations": [
+        "The transcript shows the bundled script (scripts/generate_scale.py) being executed — the scale is NOT computed by hand-writing OKLCH, hex-conversion, or interpolation maths in the response.",
+        "Output is a CSS `:root { ... }` block of custom properties whose prefix is `--brand-`.",
+        "Exactly 11 tokens are emitted, labelled 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.",
+        "Both input colours appear exactly as token values: one token is `#1e3a8a` and another is `#fbbf24`.",
+        "Lightness increases monotonically from --brand-50 (darkest) to --brand-950 (lightest) — no step is darker than the one before it.",
+        "`--steps 11` was chosen because the user asked for a 50-950 ramp, and `--format css` / `--name brand` because they asked for CSS custom properties named --brand-* (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Give me a 9-step scale from navy to gold so I can eyeball whether it actually works.",
+      "expected_output": "The two named colours are resolved to concrete hex first (confirming if genuinely ambiguous), then the script is run to produce a 9-step dark-to-light scale in a format meant for visual inspection (html swatch preview or table), with both resolved anchors present exactly.",
+      "setup": "color-ramp is model-invoked. If the resolved hex for 'navy'/'gold' is ambiguous the skill may confirm; supply a reasonable choice (e.g. navy ~#000080, gold ~#ffd700) so the run can proceed. Grade the resulting scale and the transcript.",
+      "expectations": [
+        "The named colours navy and gold are resolved to specific 6-digit hex codes before the scale is generated (judgement).",
+        "The transcript shows scripts/generate_scale.py being run — the scale is not derived by hand.",
+        "The scale has exactly 9 steps, ordered dark to light.",
+        "A visual/scannable format is chosen for 'eyeball' — html swatch preview or table — rather than raw json (judgement).",
+        "Both resolved anchor colours appear exactly in the output and are marked as the two anchors.",
+        "If html is produced, the file is presented or its path surfaced so the user can open it; if table, it is shown inline (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "That scale you just made is still too washed out through the middle — make it more vivid.",
+      "expected_output": "The script is re-run with a raised --chroma-boost (roughly 0.6-0.8) rather than the individual hex values being hand-edited, and both anchor colours still appear exactly in the new output.",
+      "setup": "Two-turn scenario. Prior turn: the user asked for a scale through #10b981 and #f472b6 and the skill ran generate_scale.py at the default --chroma-boost 0.45. This prompt is the follow-up complaint. Grade the follow-up behaviour and its output.",
+      "note": "This targets the skill's tuning loop: complaints about washed-out/muddy results are answered by re-running with a different --chroma-boost, never by manually rewriting hex values.",
+      "expectations": [
+        "scripts/generate_scale.py is re-run with --chroma-boost raised above the previous value (roughly 0.6-0.8).",
+        "The individual hex values from the previous output are NOT hand-edited — the new scale comes from re-running the script, as shown in the transcript.",
+        "Both input colours (#10b981 and #f472b6) still appear exactly in the regenerated scale.",
+        "The response attributes the increased vividness to the raised chroma-boost, not to manual colour picking (judgement)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need a 5-step palette between #222222 and #dddddd as JSON so I can feed it into our token pipeline.",
+      "expected_output": "The script is run with --steps 5 --format json, emitting a valid JSON array of 5 step objects in which both #222222 and #dddddd are present with a non-null anchor field, passed through verbatim rather than reformatted by hand.",
+      "setup": "color-ramp is model-invoked. Run in a scratch directory. Grade the emitted JSON and the transcript.",
+      "expectations": [
+        "The transcript shows scripts/generate_scale.py being run with --format json and --steps 5.",
+        "The output parses as valid JSON: an array of exactly 5 objects, each carrying hex, label, and anchor fields.",
+        "Both #222222 and #dddddd appear as hex values in the array, and their objects have a non-null anchor value (\"A\" or \"B\").",
+        "The 5 steps run dark to light with monotonically increasing lightness.",
+        "The JSON handed back is the script's own output, not re-serialised or edited by hand (judgement)."
+      ]
+    },
+    {
+      "id": 5,
+      "type": "triggering",
+      "prompt": "We're standardising our design tokens. Can you take #0b1e3f and #e8c07d and give me a dark-to-light set of shades that includes both of those exact colours? CSS variables ideally.",
+      "expected_output": "The color-ramp skill fires on its own — the user never names it — because the request gives two hex colours and asks for a dark-to-light scale through both as CSS design tokens, which is exactly what the description covers.",
+      "setup": "Triggering test. Present this prompt to an agent that has the color-ramp skill available among its skills but is NOT told which skill to use. Judge only whether color-ramp is selected and invoked; the quality of the resulting scale is out of scope here.",
+      "note": "Tests the description's model-invocation, not execution. The cues that should fire it: two hex anchors + 'dark-to-light set of shades that includes both' + 'CSS variables' / 'design tokens'.",
+      "expectations": [
+        "The color-ramp skill is invoked in response to this prompt, without the user naming the skill or its script.",
+        "The skill is selected on the strength of the matching cues — two hex colours and a scale/tokens request through both — rather than by coincidence (judgement)."
+      ]
+    },
+    {
+      "id": 6,
+      "type": "triggering",
+      "prompt": "Give me a set of lighter and darker shades of #3b82f6 for our button hover and active states.",
+      "expected_output": "The color-ramp skill does NOT fire — the request gives only one colour, and the skill is for a scale running through TWO anchor colours. The agent handles the single-colour tint/shade request without invoking color-ramp.",
+      "setup": "Negative triggering test. Present this prompt to an agent that has the color-ramp skill available but is not told which skill to use. Judge only whether color-ramp is (correctly) NOT invoked.",
+      "note": "Guards against over-triggering on the words 'shades'/'lighter'/'darker'. The load-bearing distinction is the anchor count: color-ramp needs two colours; this prompt supplies one.",
+      "expectations": [
+        "The color-ramp skill is NOT invoked for this prompt.",
+        "The agent recognises that only one colour was given, so a two-anchor scale skill does not apply (judgement)."
+      ]
+    }
+  ]
+}
