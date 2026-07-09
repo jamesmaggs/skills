@@ -276,6 +276,8 @@ def main(argv=None):
 
     if not 3 <= args.steps <= 15:
         sys.exit("Error: --steps must be an integer between 3 and 15.")
+    if not 0 <= args.chroma_boost <= 1:
+        sys.exit("Error: --chroma-boost must be between 0 and 1.")
 
     hex_a = normalize_hex(args.a)
     hex_b = normalize_hex(args.b)

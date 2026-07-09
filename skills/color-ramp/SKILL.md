@@ -26,7 +26,7 @@ python3 scripts/generate_scale.py --a HEX --b HEX [options]
 | `--dark-end` | `6` | Target lightness % of the darkest step. Auto-extends if a given colour is darker than this. |
 | `--light-end` | `97` | Target lightness % of the lightest step. Auto-extends if a given colour is lighter than this. |
 | `--chroma-boost` | `0.45` | 0-1. How strongly the middle of the scale is boosted for vividness relative to the tapered ends. Raise this if the result still looks flat; lower it for a muted/desaturated feel. |
-| `--hue-tilt` | `8` | Degrees of hue rotation across the scale (cooler near the light end, warmer near the dark end) for a sense of depth. Set to `0` for a perfectly flat hue. |
+| `--hue-tilt` | `8` | Degrees of hue rotation applied across the scale (rotated one way at the dark end, the other at the light end) for a subtle sense of depth. Set to `0` for a perfectly flat hue. |
 | `--format` | `table` | `table` (human-readable), `json` (array of step objects), `css` (`:root` custom properties), or `html` (static swatch preview file). |
 | `--name` | `color` | Token/title prefix used by `css` and `html` formats, e.g. `--name brand` gives `--brand-500`. |
 | `--out` | *(stdout)* | Write the result to a file instead of printing it. |
