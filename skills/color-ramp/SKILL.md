@@ -1,13 +1,9 @@
 ---
 name: color-ramp
-description: Generates a perceptually even, dark-to-light OKLCH colour scale that passes through two exact hex colours given by the user. Use this skill whenever the user gives two colours and asks for a palette, colour scale, colour ramp, design tokens, or tints/shades that should include or run through both — especially if they mention avoiding "washed out", "chalky", "muddy", or "flat" results, or want output as CSS variables, JSON design tokens, or a visual swatch preview. Also use for requests like "build a palette from these two brand colours", "make me a scale from dark to light using X and Y", or "give me 50-950 shades that include both these colours". Always run the bundled script for this rather than computing OKLCH or hex maths by hand — the script is deterministic and the manual route is error-prone.
+description: Generates a perceptually even, dark-to-light OKLCH colour scale (palette, ramp, tints/shades, or design tokens) that passes exactly through two hex colours. Use when the user gives two colours and wants a scale between or through both — output as a table, CSS variables, JSON tokens, or a swatch preview — especially when they want to avoid "washed out", "chalky", or "muddy" results.
 ---
 
 # Two-Colour Ramp
-
-Builds one continuous dark-to-light colour scale that contains two given
-colours exactly, with chroma (vividness) shaped so the lightest and
-darkest steps don't go chalky or muddy. Based on the OKLCH colour space.
 
 **Always run the script below to compute the scale. Do not calculate OKLCH,
 hex conversion, or interpolation by hand — floating-point colour maths
@@ -15,9 +11,7 @@ done by hand is inconsistent between runs; the script is not.**
 
 ## Requirements
 
-Python 3 standard library only (no third-party packages, no Node or other
-runtime). Present by default on macOS and virtually all Linux systems.
-Nothing to install.
+Python 3 standard library only — no third-party packages, no Node.
 
 ## Usage
 
@@ -50,8 +44,7 @@ python3 scripts/generate_scale.py --a HEX --b HEX [options]
    - Feeding into other tooling / documenting in JSON → `json`
    - Just wants to see it / sanity-check the result → `html` (then open
      or present the file), or `table` for a quick terminal look.
-4. Run the script. Don't re-derive the maths yourself even for "just
-   one quick palette" requests — always shell out to the script.
+4. Run the script with the chosen flags.
 5. If the user says a result still looks washed out or muddy, increase
    `--chroma-boost` (try `0.6`-`0.8`) and re-run, rather than manually
    editing individual hex values afterwards.
@@ -77,22 +70,3 @@ python3 scripts/generate_scale.py --a "#1e3a8a" --b "#fbbf24" --steps 11 --forma
   --brand-950: #fff3e2;
 }
 ```
-
-## How it works
-
-The script (`scripts/generate_scale.py`) converts both input colours to
-OKLCH, sorts them dark-to-light, and builds
-an evenly-spaced lightness scale across the full requested range. Chroma
-and hue are interpolated piecewise: from the dark end of the scale up to
-anchor A, between the two anchors, and from anchor B up to the light end —
-with chroma tapered near both extremes and lightly boosted mid-scale (the
-"chroma curve" approach), plus a small hue tilt for depth. The two steps
-nearest each anchor's lightness are snapped to the anchor's exact OKLCH
-values, so both input colours always appear unmodified in the output. Any
-colour that would fall outside the sRGB gamut is pulled back in via binary
-search on chroma, so every hex returned is renderable.
-
-This is the same approach as the colour-scale theory at
-https://lab.colormeup.co/custom-color-scales — flat chroma is what makes
-generated palettes look washed out; shaping it is what gives a scale
-character without breaking perceptual evenness.
