@@ -24,6 +24,11 @@
       "name": "six-thinking-hats",
       "source": "./skills/six-thinking-hats",
       "description": "Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats)."
+    },
+    {
+      "name": "walking-skeleton",
+      "source": "./skills/walking-skeleton",
+      "description": "Stand up a walking skeleton: the thinnest end-to-end slice, built, deployed, and tested through a real deployment"
     }
   ]
 }

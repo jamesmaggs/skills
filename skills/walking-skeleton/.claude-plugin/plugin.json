@@ -1,0 +1,10 @@
+{
+  "name": "walking-skeleton",
+  "description": "Stand up a walking skeleton: the thinnest end-to-end slice, built, deployed, and tested through a real deployment",
+  "version": "0.1.0",
+  "author": {
+    "name": "James Maggs"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/jamesmaggs/skills"
+}
