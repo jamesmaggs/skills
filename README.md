@@ -7,6 +7,7 @@ A personal collection of skills for [Claude Code](https://claude.com/claude-code
 | Skill | Description |
 |-------|-------------|
 | [brand-voice](./skills/brand-voice/SKILL.md) | Interview to establish a brand's voice, scored on the [four tone-of-voice dimensions](https://www.nngroup.com/articles/tone-of-voice-dimensions/) |
+| [color-ramp](./skills/color-ramp/SKILL.md) | Generate a perceptually even, dark-to-light OKLCH colour scale that passes through two exact hex anchors |
 | [commit](./skills/commit/SKILL.md) | Stage and commit changes using [Conventional Commits](https://www.conventionalcommits.org) |
 | [premortem](./skills/premortem/SKILL.md) | Run a premortem before starting a task — assume it failed, surface why, and fix the gaps first |
 | [six-thinking-hats](./skills/six-thinking-hats/SKILL.md) | Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats) |

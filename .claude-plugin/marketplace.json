@@ -11,6 +11,11 @@
       "description": "Establish a brand's voice and tone through a structured interview, output as a fixed-schema guide."
     },
     {
+      "name": "color-ramp",
+      "source": "./skills/color-ramp",
+      "description": "Generate a perceptually even OKLCH colour scale through two exact hex anchors"
+    },
+    {
       "name": "commit",
       "source": "./skills/commit",
       "description": "Stage and commit changes using Conventional Commits."
