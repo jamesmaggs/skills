@@ -1,7 +1,7 @@
 {
   "name": "color-ramp",
   "description": "Generate a perceptually even OKLCH colour scale through two exact hex anchors",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "James Maggs"
   },

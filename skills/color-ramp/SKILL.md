@@ -1,6 +1,6 @@
 ---
 name: color-ramp
-description: Generates a perceptually even, dark-to-light OKLCH colour scale (palette, ramp, tints/shades, or design tokens) that passes exactly through two hex colours. Use when the user gives two colours and wants a scale between or through both — output as a table, CSS variables, JSON tokens, or a swatch preview — especially when they want to avoid "washed out", "chalky", or "muddy" results.
+description: Generates a perceptually even, dark-to-light OKLCH colour scale — a palette or ramp — that passes exactly through two given hex colours. Use when the user supplies two colours and wants one continuous scale between or through both, output as a table, CSS variables, JSON design tokens, or a swatch preview, especially to avoid "washed out", "chalky", or "muddy" results. Requires two anchor colours; for tints or shades of a single colour, answer directly without this skill.
 ---
 
 # Two-Colour Ramp
