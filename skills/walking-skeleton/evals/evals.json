@@ -1,0 +1,48 @@
+{
+  "skill_name": "walking-skeleton",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Let's build a walking skeleton for this project.",
+      "expected_output": "The skill detects that a build->deploy->test pipeline already exists (CI, Dockerfile, Terraform, e2e suite), tells the user this isn't the right time for a walking skeleton and why, and stops — it does NOT start scaffolding anything.",
+      "setup": "In an empty temp directory, run the fixture evals/files/setup_has_pipeline.sh (a Node service already wired with a GitHub Actions build->deploy->e2e workflow, a Dockerfile, Terraform IaC, and a Playwright e2e test). Invoke the skill in that directory.",
+      "files": ["evals/files/setup_has_pipeline.sh"],
+      "expectations": [
+        "The skill stops at the bail-gate and does not proceed to stack discovery, an interview, or a plan.",
+        "It names the concrete evidence of an existing pipeline it found (at least the CI workflow, plus IaC/Dockerfile or the e2e suite), not a generic refusal.",
+        "It explains that a walking skeleton is for before such a pipeline exists, so now is not the right time.",
+        "No files are created or modified and no docs/WALKING-SKELETON.md is written (check the working tree).",
+        "It does not begin building, provisioning, or running any deploy/CI/test commands (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set up a walking skeleton for this app.",
+      "expected_output": "The skill does NOT bail (there's app code but no pipeline). It infers the stack from the README and repo signals, presents a proposed stack, explicitly confirms the deploy target, keeps the interview narrow, and refuses to be pulled into the future features the README lists. It stops for user confirmation before building.",
+      "setup": "In an empty temp directory, run the fixture evals/files/setup_greenfield.sh (a README describing TaskFlow plus a listing of desired future features, an Express dependency, an .nvmrc, and a minimal src/app.js — but no CI, Dockerfile, IaC, or e2e harness). Invoke the skill in that directory.",
+      "files": ["evals/files/setup_greenfield.sh"],
+      "expectations": [
+        "The skill does NOT bail — it recognises that app code without any build/deploy/test pipeline is a valid starting point.",
+        "It proposes a stack inferred from the repo (Node/Express web app, Node 20 from .nvmrc) rather than asking the user to state the language from scratch.",
+        "It explicitly asks the user to confirm the deploy target, treating it as unknown because the docs do not state it.",
+        "The interview stays narrow — it seeks the trivial end-to-end slice, the major components, the deploy target, and blocking non-functional constraints; it does not enumerate or design the README's future features (dashboard, email reminders, recurring tasks, mobile app) (judgement).",
+        "If the request or README tempts it toward those future features, it redirects — those come after the skeleton walks (judgement).",
+        "It stops for user confirmation (and reaches plan approval / plan mode) before creating infrastructure; it does not silently start building (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Continue setting up the walking skeleton.",
+      "expected_output": "The skill sees that docs/WALKING-SKELETON.md already exists, treats this as a resume rather than a fresh run, summarises progress (build automation done, IaC next), and asks whether to resume or start over — without re-running the bail-gate over its own partial infra and without re-interviewing.",
+      "setup": "In an empty temp directory, run the fixture evals/files/setup_resume.sh (a partially-built skeleton: docs/WALKING-SKELETON.md with the first two boxes ticked and the rest unticked, plus a partial Dockerfile on disk). Invoke the skill in that directory.",
+      "files": ["evals/files/setup_resume.sh"],
+      "expectations": [
+        "The skill detects docs/WALKING-SKELETON.md and enters resume mode instead of running discovery or the interview afresh.",
+        "It summarises current progress from the checklist — the completed steps and the next unchecked one (IaC for the production-like environment).",
+        "It asks the user whether to resume or start over rather than silently continuing or silently restarting.",
+        "It does NOT bail because of the partial Dockerfile/infra already present — its own work-in-progress must not trip the bail-gate (judgement).",
+        "It does not discard or overwrite docs/WALKING-SKELETON.md without the user choosing 'start over' (judgement)."
+      ]
+    }
+  ]
+}
