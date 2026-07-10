@@ -1,0 +1,60 @@
+{
+  "skill_name": "to-stories",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/to-stories",
+      "expected_output": "The skill maps the three specified capabilities against the code, finds R1 (registration) already built and R2/R3 absent, and creates exactly two stories — password reset and user export — in the markdown backlog. It creates no story for the already-built registration capability.",
+      "setup": "to-stories is user-invoked. In an empty temp directory, run the fixture evals/files/setup_gap.sh (spec with R1-R3, R1 implemented in src/auth/register.js, a CLAUDE.md configuring a local markdown backlog, docs/backlog/ empty). Invoke the skill there.",
+      "files": ["evals/files/setup_gap.sh"],
+      "expectations": [
+        "The skill resolves the destination to the local markdown backlog (docs/backlog/), not GitHub, and states it before drafting.",
+        "It marks each capability built/partial/absent with a concrete code reference — R1 is built (src/auth/register.js), R2 and R3 are absent (transcript).",
+        "Exactly two story files are created under docs/backlog/, one for password reset (R2) and one for user export (R3).",
+        "No story is created for registration (R1) — the already-built capability is dropped.",
+        "Each created story follows the Connextra shape (Title / As a / I want / So that) with a Gherkin Given/When/Then acceptance-criteria section and a Source line citing docs/spec.md (judgement).",
+        "The acceptance criteria are concrete and testable (e.g. reset links expire after one hour; the CSV excludes the password hash) rather than vague like 'works correctly' (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/to-stories",
+      "expected_output": "Every specified capability (L1, L2) is already implemented, so the intersection is empty. The skill reports there is nothing to create and writes no story files — it does not invent work.",
+      "setup": "to-stories is user-invoked. In an empty temp directory, run evals/files/setup_clean.sh (spec with L1-L2 both implemented in src/ledger.js, markdown backlog tracker, docs/backlog/ empty). Invoke the skill there.",
+      "files": ["evals/files/setup_clean.sh"],
+      "expectations": [
+        "The skill reports a clean intersection — every specified capability is already built — and stops.",
+        "No files are created under docs/backlog/ (check the working tree).",
+        "It does not fabricate stories for capabilities that are absent from the spec or already implemented (judgement).",
+        "It grounds the 'already built' conclusion in code references to src/ledger.js (post, balance) rather than asserting it (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/to-stories",
+      "expected_output": "The skill reconciles against the existing backlog: it creates a new story for the uncovered price-filter capability, proposes updating story 001 (which only partially covers search) rather than duplicating it, and flags story 002 (loyalty points, absent from the spec) for review — without editing or deleting either existing file.",
+      "setup": "to-stories is user-invoked. In an empty temp directory, run evals/files/setup_reconcile.sh (spec S1-S2 with nothing built; docs/backlog/ already holds 001 partially covering S1 and 002 which is stale). Invoke the skill there.",
+      "files": ["evals/files/setup_reconcile.sh"],
+      "expectations": [
+        "A new story file is created for the price-filter capability (S2), which no existing story covered.",
+        "For search-by-city (S1) the skill PROPOSES an update to the existing story 001 rather than creating a duplicate story for the same capability.",
+        "The existing file docs/backlog/001-lookup-hotel-by-name.md is not modified — the proposed update is surfaced to the user, not applied (check the file is byte-for-byte unchanged).",
+        "Story 002 (loyalty points) is flagged for review as no longer matching the spec, and docs/backlog/002-loyalty-points.md is neither edited nor deleted.",
+        "The final report groups the outcome (created / update proposed / flagged for review) so the user can see each bucket (judgement)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/to-stories",
+      "expected_output": "The lumped account-system requirement is split into several thin vertical-slice stories (register, log in, log out, password reset, edit profile, admin deactivate), each passing INVEST — not one giant 'build the account system' story and not horizontal layer stories.",
+      "setup": "to-stories is user-invoked. In an empty temp directory, run evals/files/setup_invest.sh (spec A1 lumping a whole account system into one requirement, nothing built, docs/backlog/ empty). Invoke the skill there.",
+      "files": ["evals/files/setup_invest.sh"],
+      "expectations": [
+        "The single lumped requirement is split into multiple stories rather than emitted as one large 'build the account system' story.",
+        "The stories are thin VERTICAL slices, each a single user-facing behaviour (e.g. 'reset a forgotten password'), not horizontal layers like a separate UI story, API story, or database story (judgement).",
+        "Each story is independently valuable and testable — it names a role who benefits and has concrete Given/When/Then criteria (judgement).",
+        "Each created story is written to docs/backlog/ in the Connextra + Gherkin shape with a Source line (judgement)."
+      ]
+    }
+  ]
+}
