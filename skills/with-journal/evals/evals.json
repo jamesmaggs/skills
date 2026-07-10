@@ -1,0 +1,59 @@
+{
+  "skill_name": "with-journal",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/with-journal",
+      "expected_output": "The bundled script injects a marker-wrapped `## Journal` block into both CLAUDE.md and AGENTS.md, preserving their existing content, and no journal files are created during setup.",
+      "setup": "with-journal is user-invoked. In an empty temp directory, run evals/files/setup_existing.sh (creates CLAUDE.md and AGENTS.md, each with pre-existing content). Invoke the skill there.",
+      "files": ["evals/files/setup_existing.sh"],
+      "expectations": [
+        "The transcript shows scripts/inject_journal.py being run — the files are not hand-edited.",
+        "Both CLAUDE.md and AGENTS.md gain a `## Journal` section wrapped in `<!-- BEGIN JOURNAL INSTRUCTIONS (managed by with-journal skill) -->` and `<!-- END JOURNAL INSTRUCTIONS -->` markers.",
+        "Each file's pre-existing content is preserved above the injected block (nothing overwritten).",
+        "The injected block instructs the agent to journal to docs/journal and to never write secrets.",
+        "Each file contains exactly one BEGIN marker — the block is not duplicated.",
+        "No docs/journal/ directory or journal-*.md file is created during the run — this skill sets up instructions only (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/with-journal",
+      "expected_output": "The script reports that no agent-instruction file exists, and the skill asks the user which to create (offering AGENTS.md as the portable default) rather than creating one unprompted.",
+      "setup": "with-journal is user-invoked, and interactive in the no-file case. In an empty temp directory, run evals/files/setup_empty.sh (a project with only README.md). Invoke the skill. If running headless, treat the point where it asks which file to create as the correct stopping point; a persona may answer 'AGENTS.md'.",
+      "files": ["evals/files/setup_empty.sh"],
+      "expectations": [
+        "scripts/inject_journal.py is run and reports no agent-instruction file found (non-zero exit).",
+        "The skill asks the user which file to create rather than creating one on its own (judgement).",
+        "AGENTS.md is surfaced as the portable, cross-agent default (judgement).",
+        "No CLAUDE.md, AGENTS.md, or GEMINI.md is created before the user answers."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/with-journal",
+      "expected_output": "Re-running against files that already contain the journal block reports `unchanged` and does not duplicate the block.",
+      "setup": "with-journal is user-invoked. In an empty temp directory, run evals/files/setup_existing.sh, then run `python3 <skill-dir>/scripts/inject_journal.py --root .` once so both files already contain the journal block. Invoke the skill again.",
+      "files": ["evals/files/setup_existing.sh"],
+      "expectations": [
+        "scripts/inject_journal.py is run.",
+        "Each file still contains exactly one BEGIN/END marker pair — the block is not appended a second time.",
+        "The action reported for the already-seeded files is `unchanged` (or the skill notes journalling is already set up).",
+        "No journal-*.md file is created."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/with-journal set it up in AGENTS.md",
+      "expected_output": "Given an explicit target and no existing config file, the script is run with --create AGENTS.md, creating that one file with the journal block; no other config file is created.",
+      "setup": "with-journal is user-invoked. In an empty temp directory, run evals/files/setup_empty.sh. Invoke the skill with the instruction to set journalling up in AGENTS.md.",
+      "files": ["evals/files/setup_empty.sh"],
+      "expectations": [
+        "scripts/inject_journal.py is run with --create AGENTS.md (transcript).",
+        "AGENTS.md is created containing the marker-wrapped `## Journal` block.",
+        "Only the named file is created — no CLAUDE.md or GEMINI.md appears (judgement).",
+        "No journal-*.md file is created."
+      ]
+    }
+  ]
+}
