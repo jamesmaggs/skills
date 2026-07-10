@@ -3,6 +3,13 @@
 # renamed and all its call sites updated in lockstep.
 # Correct behaviour: ONE commit (the call sites can't build without the rename).
 set -euo pipefail
+
+# Guard: only ever run in a throwaway directory. If we are inside a git work
+# tree, this fixture would mutate the real repo (config, files) — refuse.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "Refusing to run inside a git repository — run this fixture in an empty temp directory." >&2
+  exit 1
+fi
 git init -q
 git config user.email eval@example.com
 git config user.name "Eval Fixture"

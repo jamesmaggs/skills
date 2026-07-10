@@ -5,6 +5,13 @@
 # rather than let its own partial infra trip the bail-gate.
 set -euo pipefail
 
+# Guard: only ever run in a throwaway directory. If we are inside a git work
+# tree, this fixture would mutate the real repo (config, files) — refuse.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "Refusing to run inside a git repository — run this fixture in an empty temp directory." >&2
+  exit 1
+fi
+
 git init -q
 git config user.email fixture@example.com
 git config user.name Fixture
