@@ -12,6 +12,7 @@ A personal collection of skills for [Claude Code](https://claude.com/claude-code
 | [premortem](./skills/premortem/SKILL.md) | Run a premortem before starting a task — assume it failed, surface why, and fix the gaps first |
 | [six-thinking-hats](./skills/six-thinking-hats/SKILL.md) | Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats) |
 | [walking-skeleton](./skills/walking-skeleton/SKILL.md) | Stand up a walking skeleton at project start — the thinnest end-to-end slice, built, deployed, and tested through a real deployment |
+| [with-journal](./skills/with-journal/SKILL.md) | Inject journalling instructions into a project's agent-instruction files so the agent keeps a persistent work journal in `docs/journal` |
 
 ## Install
 

@@ -34,6 +34,11 @@
       "name": "walking-skeleton",
       "source": "./skills/walking-skeleton",
       "description": "Stand up a walking skeleton: the thinnest end-to-end slice, built, deployed, and tested through a real deployment"
+    },
+    {
+      "name": "with-journal",
+      "source": "./skills/with-journal",
+      "description": "Inject work-journal instructions into a project's agent-instruction files so the agent keeps a persistent journal"
     }
   ]
 }
