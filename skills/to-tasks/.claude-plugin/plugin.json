@@ -1,7 +1,7 @@
 {
   "name": "to-tasks",
   "description": "Decomposes a user story into small, independently verifiable single-session tasks, records dependencies, and writes them to the project's task tracker; halts and flags the story if its acceptance criteria are not testable.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "James Maggs"
   },

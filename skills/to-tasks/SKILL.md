@@ -72,11 +72,13 @@ Break the story into tasks where each one is:
 
 Prefer independence: shape tasks so they don't need each other's output. Where a
 task genuinely cannot start until another finishes, record the dependency
-explicitly on the dependent task — never leave an ordering implicit (in Beads, as a
-native `bd dep`; otherwise as the `Depends on:` line of the task shape below). If
-most tasks depend on one another, they are cut wrong (horizontal layers); re-cut
-into vertical slices so each stands alone. Read `references/decomposition.md` for
-how to size a task, handle dependencies, and when a spike is the right first task.
+explicitly on the dependent task — never leave an ordering implicit. If most tasks
+depend on one another, they are cut wrong (horizontal layers); re-cut into vertical
+slices so each stands alone. Read `references/decomposition.md` for how to size a
+task, handle dependencies, and when a spike is the right first task.
+
+Done when every acceptance criterion is covered by at least one task and every task
+traces back to one — no criterion left without a task, no task without a criterion.
 
 ## Step 5: Write the tasks
 
