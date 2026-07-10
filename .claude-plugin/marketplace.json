@@ -36,6 +36,11 @@
       "description": "Reads a project's documentation and codebase, finds capabilities that are specified but not yet built (and not already tracked), and creates INVEST-validated user stories — Connextra format with Gherkin acceptance criteria — in the project's issue tracker."
     },
     {
+      "name": "to-tasks",
+      "source": "./skills/to-tasks",
+      "description": "Decomposes a user story into small, independently verifiable single-session tasks, records dependencies, and writes them to the project's task tracker; halts and flags the story if its acceptance criteria are not testable."
+    },
+    {
       "name": "walking-skeleton",
       "source": "./skills/walking-skeleton",
       "description": "Stand up a walking skeleton: the thinnest end-to-end slice, built, deployed, and tested through a real deployment"
