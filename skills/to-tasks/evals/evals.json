@@ -1,0 +1,62 @@
+{
+  "skill_name": "to-tasks",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm about to start on the account dashboard story in the backlog — break it into tasks I can work through.",
+      "expected_output": "The story's acceptance criterion ('works correctly and loads fast') is not testable, so the skill halts at the gate before decomposing, creates no tasks, and flags the story in its tracker (a needs-clarification note appended to the story file) naming the untestable criterion.",
+      "setup": "In an empty temp directory, run the fixture evals/files/setup_gate.sh (story 001 with an untestable acceptance criterion; CLAUDE.md configures a markdown story backlog and a separate markdown task store). Follow the skill at the given SKILL.md path.",
+      "files": ["evals/files/setup_gate.sh"],
+      "expectations": [
+        "The skill halts at the testability gate and does NOT decompose the story into tasks.",
+        "No task file is created under docs/tasks/ (check the working tree).",
+        "The story is flagged for clarification where it lives — a 'Needs clarification' note is appended to docs/backlog/001-account-dashboard.md.",
+        "The report names the specific untestable criterion ('works correctly and loads fast') and what would make it observable/testable (judgement).",
+        "It does not invent an observable outcome to push the vague criterion past the gate (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Pick up the password reset story and decompose it into tasks.",
+      "expected_output": "The story's acceptance criteria are testable, so the skill decomposes it into single-session tasks — each with a concrete Verification — written to the markdown task store, covering every acceptance criterion, with no clarification flag on the story.",
+      "setup": "In an empty temp directory, run evals/files/setup_decompose.sh (story 001 with two testable scenarios and one rule; markdown story backlog + separate markdown task store). Follow the skill at the given SKILL.md path.",
+      "files": ["evals/files/setup_decompose.sh"],
+      "expectations": [
+        "The skill passes the gate (does not flag the story) and writes tasks to a file under docs/tasks/ for story 001.",
+        "Each task follows the task shape — Task / Story / Satisfies / Verification / Depends on.",
+        "Every task carries a concrete, observable Verification (a test to run, a command + expected output, or a state to inspect), not 'works correctly' (judgement).",
+        "The tasks together cover every acceptance criterion — both the request-reset scenario and the submit-new-password scenario, and the 1-hour token-expiry rule — with each task tracing back to a criterion (judgement).",
+        "No 'Needs clarification' note is added to docs/backlog/001-password-reset.md.",
+        "Tasks are sized to a single agent session and prefer independence (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Break the customer archiving story down into actionable tasks before I start implementing.",
+      "expected_output": "The skill decomposes the story and, because archived state must be persisted before it can be hidden from the active list or restored, records the genuine dependency explicitly (a populated 'Depends on:' on the dependent tasks) rather than leaving an ordering implicit.",
+      "setup": "In an empty temp directory, run evals/files/setup_dependencies.sh (story 001 whose three scenarios share a persisted-archived-state foundation; markdown trackers). Follow the skill at the given SKILL.md path.",
+      "files": ["evals/files/setup_dependencies.sh"],
+      "expectations": [
+        "The skill passes the gate and writes tasks to a file under docs/tasks/ for story 001.",
+        "Where a task genuinely depends on the persisted-archived-state foundation, the dependency is recorded explicitly in a populated 'Depends on:' field referencing the prerequisite task — not left implicit in prose (judgement).",
+        "No ordering is hidden: a decomposition that is instead fully independent vertical slices is acceptable only if each slice truly stands alone (judgement).",
+        "The tasks together cover all three scenarios (archive, hide-from-active-list, restore) (judgement).",
+        "Each task has a concrete Verification and is sized to a single session (judgement)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Break the next story in the backlog down into tasks.",
+      "expected_output": "No story is named, so the skill selects the next un-decomposed story (002 logout) — skipping 001 login, which already has tasks — and decomposes it, leaving 001 and its existing task file untouched.",
+      "setup": "In an empty temp directory, run evals/files/setup_select_next.sh (001 login already has docs/tasks/001-login.md; 002 logout is not yet decomposed; markdown trackers). Follow the skill at the given SKILL.md path.",
+      "files": ["evals/files/setup_select_next.sh"],
+      "expectations": [
+        "The skill selects story 002 (logout) as the next un-decomposed story and states which story it is decomposing.",
+        "It does NOT re-decompose 001 (login), which already has a task file.",
+        "A task file for 002 is created under docs/tasks/ (e.g. docs/tasks/002-logout.md).",
+        "The pre-existing docs/tasks/001-login.md is left unchanged (byte-for-byte).",
+        "The tasks for 002 cover both scenarios (log out invalidates the session; a stale cookie yields 401) with concrete Verifications (judgement)."
+      ]
+    }
+  ]
+}
