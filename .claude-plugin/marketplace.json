@@ -31,6 +31,11 @@
       "description": "Review or stress-test an idea from six parallel perspectives (de Bono's Six Thinking Hats)."
     },
     {
+      "name": "to-stories",
+      "source": "./skills/to-stories",
+      "description": "Reads a project's documentation and codebase, finds capabilities that are specified but not yet built (and not already tracked), and creates INVEST-validated user stories — Connextra format with Gherkin acceptance criteria — in the project's issue tracker."
+    },
+    {
       "name": "walking-skeleton",
       "source": "./skills/walking-skeleton",
       "description": "Stand up a walking skeleton: the thinnest end-to-end slice, built, deployed, and tested through a real deployment"
