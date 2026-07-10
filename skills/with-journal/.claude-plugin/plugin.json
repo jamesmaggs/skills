@@ -1,7 +1,7 @@
 {
   "name": "with-journal",
   "description": "Inject work-journal instructions into a project's agent-instruction files so the agent keeps a persistent journal",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": {
     "name": "James Maggs"
   },

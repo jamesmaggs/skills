@@ -4,15 +4,15 @@
     {
       "id": 1,
       "prompt": "/with-journal",
-      "expected_output": "The bundled script injects a marker-wrapped `## Journal` block into both CLAUDE.md and AGENTS.md, preserving their existing content, and no journal files are created during setup.",
+      "expected_output": "The bundled script injects a `## Journal` block into both CLAUDE.md and AGENTS.md, preserving their existing content, and no journal files are created during setup.",
       "setup": "with-journal is user-invoked. In an empty temp directory, run evals/files/setup_existing.sh (creates CLAUDE.md and AGENTS.md, each with pre-existing content). Invoke the skill there.",
       "files": ["evals/files/setup_existing.sh"],
       "expectations": [
         "The transcript shows scripts/inject_journal.py being run — the files are not hand-edited.",
-        "Both CLAUDE.md and AGENTS.md gain a `## Journal` section wrapped in `<!-- BEGIN JOURNAL INSTRUCTIONS (managed by with-journal skill) -->` and `<!-- END JOURNAL INSTRUCTIONS -->` markers.",
+        "Both CLAUDE.md and AGENTS.md gain a `## Journal` section.",
         "Each file's pre-existing content is preserved above the injected block (nothing overwritten).",
         "The injected block instructs the agent to journal to docs/journal and to never write secrets.",
-        "Each file contains exactly one BEGIN marker — the block is not duplicated.",
+        "Each file contains exactly one `## Journal` heading — the block is not duplicated.",
         "No docs/journal/ directory or journal-*.md file is created during the run — this skill sets up instructions only (judgement)."
       ]
     },
@@ -37,7 +37,7 @@
       "files": ["evals/files/setup_existing.sh"],
       "expectations": [
         "scripts/inject_journal.py is run.",
-        "Each file still contains exactly one BEGIN/END marker pair — the block is not appended a second time.",
+        "Each file still contains exactly one `## Journal` heading — the block is not appended a second time.",
         "The action reported for the already-seeded files is `unchanged` (or the skill notes journalling is already set up).",
         "No journal-*.md file is created."
       ]
@@ -50,7 +50,7 @@
       "files": ["evals/files/setup_empty.sh"],
       "expectations": [
         "scripts/inject_journal.py is run with --create AGENTS.md (transcript).",
-        "AGENTS.md is created containing the marker-wrapped `## Journal` block.",
+        "AGENTS.md is created containing the `## Journal` block.",
         "Only the named file is created — no CLAUDE.md or GEMINI.md appears (judgement).",
         "No journal-*.md file is created."
       ]

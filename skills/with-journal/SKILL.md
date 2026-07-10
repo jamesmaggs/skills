@@ -29,8 +29,9 @@ python3 scripts/inject_journal.py [--root DIR] [--create FILE]
 
 1. Run `python3 scripts/inject_journal.py` from the project root. It injects
    the block into every `CLAUDE.md`, `AGENTS.md`, and `GEMINI.md` it finds and
-   prints the action per file (`created`/`updated`/`added`/`unchanged`);
-   re-running is safe.
+   prints the action per file (`created`/`added`/`updated`/`unchanged`/`kept`);
+   re-running is safe. `kept` means the file's `## Journal` section was edited
+   locally and was left untouched.
 2. If it reports no agent-instruction file found, ask the user which file to
    create — `AGENTS.md` is the portable, cross-agent default — then run
    `python3 scripts/inject_journal.py --create <FILE>`.
