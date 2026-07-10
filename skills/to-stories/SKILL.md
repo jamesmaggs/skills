@@ -30,8 +30,7 @@ backlog path). Then resolve one of two destinations:
   unauthenticated, tell the user how to fix it (`! gh auth login`) or fall back
   to markdown.
 - **Local markdown backlog** — the fallback when no tracker is reachable, or the
-  docs name an unsupported tracker (Jira, Linear, …). Write to `docs/backlog/`,
-  one file per story.
+  docs name an unsupported tracker (Jira, Linear, …).
 
 State the resolved destination in one line before continuing.
 
@@ -48,7 +47,13 @@ enough to become a Given/When/Then.
 Inspect the codebase to determine which of those capabilities already exist —
 routes, handlers, modules, commands, UI, tests. Match by behaviour, not by name:
 a capability is "built" when the code actually delivers it, not when a stub or a
-TODO gestures at it. A half-built capability is a gap.
+TODO gestures at it.
+
+This is the crux — the built/not-built call decides everything downstream, so
+ground it in evidence. Mark **every** capability from Step 2 as **built**,
+**partial**, or **absent**, each with a concrete code reference (file/symbol) that
+justifies the call. A capability you cannot find evidence for is **absent**;
+**partial** is a gap.
 
 ## Step 4: Fetch existing stories
 
@@ -76,11 +81,11 @@ longer corresponds to anything in the current spec, **flag it for review** rathe
 than acting on it or spawning unrelated work beside it — the spec may have moved
 on, or the story may be stale.
 
-New stories are created directly in Step 8. Proposed updates and stale-story flags
-are *surfaced for the user*, not applied — you did not author those stories, so
-you do not silently mutate or close them. If the whole intersection is empty and
-there is nothing to update or flag, say so and stop — a clean reconciliation is a
-valid result, not a failure.
+New stories go on to Step 8. Proposed updates and stale-story flags are *surfaced
+for the user*, not applied — you did not author those stories, so you do not
+silently mutate or close them. If the whole intersection is empty and there is
+nothing to update or flag, say so and stop — a clean reconciliation is a valid
+result, not a failure.
 
 ## Step 6: Draft each story
 

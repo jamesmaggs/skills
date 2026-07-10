@@ -1,7 +1,7 @@
 {
   "name": "to-stories",
   "description": "Reads a project's documentation and codebase, finds capabilities that are specified but not yet built (and not already tracked), and creates INVEST-validated user stories — Connextra format with Gherkin acceptance criteria — in the project's issue tracker.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "James Maggs"
   },
