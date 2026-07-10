@@ -37,9 +37,10 @@ Keep a running journal of your work in `docs/journal/`. It survives context
 compaction and session boundaries. It is committed to the repository, so it
 must never contain secrets.
 
-At the start of a session, create `docs/journal/journal-N.md`, where N is one
-higher than the highest existing `docs/journal/journal-*.md` (start at 1 if
-none exist). Create `docs/journal/` if it is missing.
+At the start of a session, create `docs/journal/journal-NNNN.md`, where NNNN is
+a zero-padded four-digit number one higher than the highest existing
+`docs/journal/journal-*.md` (start at `0001` if none exist). Create
+`docs/journal/` if it is missing.
 
 Append an entry for every non-trivial action, as you do the work — not as a
 summary at the end. Each entry includes:
@@ -69,7 +70,17 @@ tried before, skim the previous `docs/journal/journal-*.md` files too."""
 # A block matching any of these is recognised as skill-generated and safe to
 # refresh; anything else is treated as a user edit and left alone. Append the
 # outgoing text here (never remove entries) whenever BODY changes.
-KNOWN_BODIES = [BODY]
+KNOWN_BODIES = [
+    BODY,
+    BODY.replace(  # v0.2.0: plain integer journal numbering
+        "create `docs/journal/journal-NNNN.md`, where NNNN is\n"
+        "a zero-padded four-digit number one higher than the highest existing\n"
+        "`docs/journal/journal-*.md` (start at `0001` if none exist).",
+        "create `docs/journal/journal-N.md`, where N is one\n"
+        "higher than the highest existing `docs/journal/journal-*.md` (start at 1 if\n"
+        "none exist).",
+    ),
+]
 
 
 def _section_span(lines: list[str]) -> tuple[int, int] | None:
