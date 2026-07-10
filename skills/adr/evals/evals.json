@@ -1,0 +1,81 @@
+{
+  "skill_name": "adr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Record our decision to use PostgreSQL rather than DynamoDB as the billing service's primary datastore. Context: billing needs multi-row ACID transactions and complex relational reporting queries, and the team is fluent in SQL. Options we weighed: PostgreSQL on RDS, DynamoDB, and MySQL on RDS. Decision: PostgreSQL on RDS. Consequences: we own schema migrations and eventually hit vertical-scaling limits, but we get transactional integrity and rich querying today.",
+      "expected_output": "The decision is consequential and non-obvious with all required parts supplied, so the skill writes a new ADR at docs/adr/0001-*.md (zero-padded to four digits, kebab-cased title), with Status Accepted, today's date, and the four default sections filled from the request, and creates a docs/adr/README.md index linking to it.",
+      "setup": "In an empty temp directory, run evals/files/setup_new.sh (a plain project with no ADR directory). Invoke the skill there.",
+      "files": ["evals/files/setup_new.sh"],
+      "expectations": [
+        "Exactly one ADR file is created, at docs/adr/, and no ADR directory pre-existed so it defaults to docs/adr.",
+        "The filename is 0001-<kebab-title>.md — zero-padded to four digits, title kebab-cased (e.g. docs/adr/0001-use-postgresql-for-billing.md).",
+        "The ADR contains a `- Status: Accepted` line (the decision is presented as final, not proposed).",
+        "The `- Date:` line equals today's date in YYYY-MM-DD form (the output of `date +%F`), not a guessed or hallucinated date.",
+        "The ADR has the four default sections in order: `## Context and drivers`, `## Considered options`, `## Decision`, `## Consequences`.",
+        "The Considered options section lists at least two options (PostgreSQL, DynamoDB, MySQL) drawn from the request, not invented.",
+        "The Decision section records PostgreSQL on RDS as the chosen option.",
+        "A docs/adr/README.md index is created with a table row linking the ADR number to its file.",
+        "No content is fabricated beyond what the request supplied (judgement)."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Record an architecture decision: we're consolidating our six service repos into a single monorepo. Context: duplicated CI config across repos and cross-repo changes are painful to coordinate atomically. Options considered: keep polyrepo with shared tooling, monorepo managed with Nx, monorepo managed with Bazel. Decision: monorepo managed with Nx. Consequences: one CI pipeline and atomic cross-service commits, at the cost of larger clones and a stronger need for code-ownership rules.",
+      "expected_output": "The skill discovers the existing doc/adr directory (not the default docs/adr), and matches its conventions: numbers the new ADR 008 with three digits, mirrors the existing section headings, writes it into doc/adr, and appends a row to the existing doc/adr/README.md index rather than creating a new one.",
+      "setup": "In an empty temp directory, run evals/files/setup_existing.sh (a project with doc/adr/007-use-a-rest-api.md using three-digit numbering and a non-default section layout, plus an index). Invoke the skill there.",
+      "files": ["evals/files/setup_existing.sh"],
+      "expectations": [
+        "The new ADR is written into the existing doc/adr directory — no new docs/adr directory is created.",
+        "The new file is numbered 008 with three digits (matching the existing 007 width), e.g. doc/adr/008-adopt-a-monorepo.md — not 0008 and not restarting at 001.",
+        "The new ADR mirrors the existing file's section headings (Context / Decision Drivers / Considered Options / Decision Outcome), not the skill's own default section names.",
+        "The title line follows the existing style (e.g. `# 8. Adopt a monorepo`).",
+        "The considered options include the three supplied options (polyrepo, Nx monorepo, Bazel monorepo).",
+        "A row for the new ADR is appended to the existing doc/adr/README.md; the 007 row is preserved and no second index file is created.",
+        "The pre-existing 007 ADR is left unchanged (judgement)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write an ADR documenting that we've decided to use the date-fns library for date formatting on the frontend.",
+      "expected_output": "The decision is a routine, easily-reversible library pick with no architectural weight, so it fails the consequential-and-non-obvious bar. The skill declines to write an ADR, explains why, and creates no file (optionally asking the user to confirm if they still want one).",
+      "setup": "In an empty temp directory, run evals/files/setup_new.sh (a plain project with no ADR directory). Invoke the skill there.",
+      "files": ["evals/files/setup_new.sh"],
+      "expectations": [
+        "No ADR file is created and no docs/adr (or other ADR) directory is created.",
+        "The skill explains the decision does not meet the bar — it is easily reversible / obvious / a routine library choice — rather than silently writing one.",
+        "The skill either stops or asks the user whether they really want an ADR, instead of defaulting to writing one (judgement).",
+        "No options, rationale, or consequences are invented to pad out a record (judgement)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We've decided to move the public API from REST to GraphQL — this supersedes ADR 0001. Context: clients over-fetch and need flexible field selection across many screens. Options considered: keep REST with sparse fieldsets, adopt GraphQL via Apollo Server, adopt gRPC-web. Decision: adopt GraphQL via Apollo Server. Consequences: a new schema and resolver layer to own plus a team learning curve, but flexible queries and fewer round-trips.",
+      "expected_output": "The skill writes a new ADR (0002) whose Decision names that it supersedes 0001, flips ADR 0001's status to Superseded-by-0002, and updates both rows in the index.",
+      "setup": "In an empty temp directory, run evals/files/setup_supersede.sh (a project with an accepted docs/adr/0001-use-a-rest-api.md and an index). Invoke the skill there.",
+      "files": ["evals/files/setup_supersede.sh"],
+      "expectations": [
+        "A new ADR docs/adr/0002-*.md is created (four-digit number, matching the existing 0001 width) for the GraphQL decision.",
+        "The new ADR's Decision (or body) explicitly states it supersedes ADR 0001.",
+        "The existing 0001 file's status line is changed to reflect it is superseded by 0002 (e.g. `- Status: Superseded-by-0002`).",
+        "The docs/adr/README.md index is updated: the 0001 row shows the superseded status and a row for 0002 is added.",
+        "The new ADR uses the same section layout as the existing 0001 (Context and drivers / Considered options / Decision / Consequences).",
+        "The considered options include the three supplied options (REST with sparse fieldsets, GraphQL, gRPC-web)."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "ADR 0003 has been accepted by the team — please update its status.",
+      "expected_output": "A pure status change: the skill flips ADR 0003 from Proposed to Accepted and updates its index row, without creating any new ADR file or altering the rest of the record.",
+      "setup": "In an empty temp directory, run evals/files/setup_status.sh (a project with docs/adr/0003-adopt-event-sourcing.md in Proposed status and an index). Invoke the skill there.",
+      "files": ["evals/files/setup_status.sh"],
+      "expectations": [
+        "No new ADR file is created — the directory still contains exactly one ADR (0003).",
+        "The `- Status:` line of docs/adr/0003-adopt-event-sourcing.md is changed from `Proposed` to `Accepted`.",
+        "The Status row for 0003 in docs/adr/README.md is updated to Accepted.",
+        "No other content of the 0003 ADR (context, options, decision, consequences, date) is modified (judgement).",
+        "The skill does not invent a new decision or ask for options/consequences it does not need for a status change (judgement)."
+      ]
+    }
+  ]
+}
