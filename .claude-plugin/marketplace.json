@@ -6,6 +6,11 @@
   },
   "plugins": [
     {
+      "name": "adr",
+      "source": "./skills/adr",
+      "description": "Author Architecture Decision Records (ADRs) in the MADR format."
+    },
+    {
       "name": "brand-voice",
       "source": "./skills/brand-voice",
       "description": "Establish a brand's voice and tone through a structured interview, output as a fixed-schema guide."
