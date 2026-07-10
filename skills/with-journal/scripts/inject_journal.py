@@ -11,8 +11,9 @@ Idempotent: the section is wrapped in HTML-comment markers, so re-running
 updates the block in place rather than appending a duplicate.
 
 Usage:  inject_journal.py [--root DIR] [--create FILE]
-Exit:   0 = injected/updated at least one file; 1 = bad arguments;
-        2 = no agent-instruction file found and --create not given.
+Exit:   0 = injected/updated at least one file; 1 = bad input (e.g. --root
+        not a directory); 2 = argparse usage error; 3 = no agent-instruction
+        file found and --create not given.
 
 Stdlib only -- no network, no third-party packages.
 """
@@ -67,21 +68,21 @@ BLOCK = f"{BEGIN}\n{BODY}\n{END}"
 def inject(path: Path) -> str:
     """Create/update the journal block in `path`. Returns the action taken."""
     if not path.exists():
-        path.write_text(BLOCK + "\n")
+        path.write_text(BLOCK + "\n", encoding="utf-8")
         return "created"
 
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     if BEGIN in text and END in text:
         pre = text[: text.index(BEGIN)]
         post = text[text.index(END) + len(END) :]
         updated = pre + BLOCK + post
         if updated == text:
             return "unchanged"
-        path.write_text(updated)
+        path.write_text(updated, encoding="utf-8")
         return "updated"
 
     # Append, leaving exactly one blank line before the block.
-    path.write_text(text.rstrip("\n") + "\n\n" + BLOCK + "\n")
+    path.write_text(text.rstrip("\n") + "\n\n" + BLOCK + "\n", encoding="utf-8")
     return "added"
 
 
@@ -118,7 +119,7 @@ def main(argv=None):
             + f") in {root}.\nAsk the user which to create, then re-run with --create <FILE>.",
             file=sys.stderr,
         )
-        raise SystemExit(2)
+        sys.exit(3)
 
     for path in found:
         print(f"{inject(path)}: {path}")
